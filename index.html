@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FSx for NetApp ONTAP: GlobalCorp Cloud Migration | CTO Briefing</title>
+<style>
+:root {
+  --navy-900: #0B1220;
+  --navy-800: #111A2B;
+  --navy-700: #162236;
+  --navy-600: #1E2E45;
+  --blue-500: #0067C5;
+  --blue-400: #35C2FF;
+  --orange-500: #ff6b00;
+  --orange-400: #ff8c2e;
+  --green-400: #22c55e;
+  --red-400: #f87171;
+  --yellow-400: #facc15;
+  --text-primary: #F5F9FF;
+  --text-secondary: #B7C4D6;
+  --text-muted: #6B7E96;
+  --border: #2A3A52;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--navy-900);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+#presentation {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: 2.5rem 4rem 2rem;
+  background: var(--navy-800);
+  opacity: 0;
+  pointer-events: none;
+  overflow-y: auto;
+  transition: none;
+}
+
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Navigation */
+#nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: rgba(10, 14, 26, 0.96);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  z-index: 100;
+}
+
+#nav button {
+  background: var(--navy-600);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 0.45rem 1.4rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+#nav button:hover:not(:disabled) { background: var(--blue-500); border-color: var(--blue-400); }
+#nav button:disabled { opacity: 0.3; cursor: default; }
+
+#counter {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  min-width: 5rem;
+  text-align: center;
+}
+
+#progress-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--navy-600);
+  border: 1px solid var(--border);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.dot.active { background: var(--blue-500); border-color: var(--blue-400); }
+.dot.backup { background: var(--navy-600); border-color: var(--orange-500); }
+.dot.backup.active { background: var(--orange-500); }
+
+/* Typography */
+.slide-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--orange-500);
+  margin-bottom: 0.4rem;
+}
+
+.slide-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 0.6rem;
+}
+
+.slide-title span { color: var(--blue-400); }
+
+.slide-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Cards */
+.card {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+}
+
+.card--orange { border-left: 3px solid var(--orange-500); }
+.card--blue   { border-left: 3px solid var(--blue-500); }
+.card--green  { border-left: 3px solid var(--green-400); }
+.card--red    { border-left: 3px solid var(--red-400); }
+
+.card-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.card-body {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Verdict banner */
+.verdict-banner {
+  background: rgba(255,107,0,0.08);
+  border: 1px solid var(--orange-500);
+  border-radius: 8px;
+  padding: 1.1rem 1.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.verdict-banner .vb-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--orange-400);
+  margin-bottom: 0.3rem;
+}
+
+.verdict-banner .vb-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.verdict-banner .vb-body {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.verdict-banner .vb-body strong {
+  color: var(--orange-400);
+  font-weight: 600;
+}
+
+/* Burning platform + recommendation top split */
+.bluf-top {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.burning-platform {
+  background: rgba(248,113,113,0.06);
+  border: 1px solid rgba(248,113,113,0.35);
+  border-left: 3px solid var(--red-400);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+
+.burning-platform .bp-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red-400);
+  margin-bottom: 0.35rem;
+}
+
+.burning-platform .bp-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+
+.burning-platform .bp-body {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.burning-platform .bp-body strong { color: var(--red-400); }
+
+/* ROI strip */
+.roi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.roi-chip {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--orange-500);
+  border-radius: 6px;
+  padding: 0.7rem 0.85rem;
+  text-align: center;
+}
+
+.roi-chip .roi-number {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--orange-400);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.roi-chip .roi-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.roi-chip .roi-sub {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+  line-height: 1.3;
+}
+
+/* Assurance strip */
+.assurance-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.assurance-chip {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assurance-chip .ac-icon { font-size: 1rem; flex-shrink: 0; }
+.assurance-chip .ac-label { font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.assurance-chip .ac-value { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+
+/* Pillars */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+}
+
+.pillar {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+}
+
+.pillar-icon {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.pillar-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--orange-500);
+  margin-bottom: 0.3rem;
+}
+
+.pillar-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.pillar-body {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Two-column layout */
+.two-col {
+  display: grid;
+  grid-template-columns: 58% 42%;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.two-col-equal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Comparison table */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin: 0.75rem 0;
+}
+
+.comparison-table th {
+  background: var(--navy-600);
+  color: var(--text-secondary);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.comparison-table th.winner-col {
+  background: var(--blue-500);
+  color: #fff;
+}
+
+.comparison-table td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.comparison-table tr:nth-child(even) td {
+  background: rgba(255,255,255,0.02);
+}
+
+.comparison-table .criteria-col {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.cell-win  { color: var(--green-400) !important; }
+.cell-fail { color: var(--red-400) !important; }
+.cell-warn { color: var(--yellow-400) !important; }
+
+.verdict-row td {
+  background: rgba(0,103,197,0.08) !important;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-top: 2px solid var(--border);
+}
+
+/* Checklist */
+.checklist {
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.checklist li {
+  padding: 0.2rem 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.checklist li .icon { flex-shrink: 0; }
+.icon-win  { color: var(--green-400); }
+.icon-fail { color: var(--red-400); }
+.icon-warn { color: var(--yellow-400); }
+.icon-neutral { color: var(--text-muted); }
+
+/* Section heading */
+.section-head {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue-400);
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Winner banner */
+.winner-banner {
+  background: rgba(34,197,94,0.08);
+  border: 1px solid var(--green-400);
+  border-radius: 8px;
+  padding: 0.9rem 1.3rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.winner-banner strong { color: var(--green-400); }
+
+/* Lifecycle bar */
+.lifecycle-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.lifecycle-card {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+}
+
+.lifecycle-card .lc-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.lc-hot  { color: var(--orange-500); border-top: 2px solid var(--orange-500); }
+.lc-cold { color: var(--blue-400);   border-top: 2px solid var(--blue-400); }
+.lc-dev  { color: var(--green-400);  border-top: 2px solid var(--green-400); }
+
+.lifecycle-card .lc-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.lifecycle-card .lc-body {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Backup divider */
+.slide--divider {
+  background: var(--navy-900) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.divider-rule {
+  width: 120px;
+  height: 2px;
+  background: var(--orange-500);
+  margin: 1rem auto;
+}
+
+.divider-title {
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.divider-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.divider-index {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: left;
+}
+
+.divider-index a {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.divider-index a:hover { color: var(--orange-400); }
+
+.divider-tag {
+  display: inline-block;
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--orange-500);
+  text-transform: uppercase;
+}
+
+/* Phase timeline */
+.phases {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.phase-card {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem 0.8rem;
+  position: relative;
+}
+
+.phase-num {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-400);
+  margin-bottom: 0.25rem;
+}
+
+.phase-time {
+  font-size: 0.68rem;
+  color: var(--orange-500);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.phase-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.phase-body {
+  font-size: 0.71rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.phase-risk {
+  margin-top: 0.5rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Metrics bar */
+.metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.metric {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.65rem 0.8rem;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--blue-400);
+  margin-bottom: 0.2rem;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Objection cards */
+.objection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.objection-card {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+}
+
+.objection-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--red-400);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.objection-body {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.objection-foot {
+  margin-top: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+}
+
+/* Cost table */
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin: 0.6rem 0;
+}
+
+.cost-table th {
+  background: var(--navy-600);
+  color: var(--text-muted);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--border);
+}
+
+.cost-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.cost-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.cost-table .highlight-row td {
+  background: rgba(0,103,197,0.1) !important;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Print */
+@media print {
+  html, body { overflow: visible; height: auto; }
+  #presentation { height: auto; position: static; overflow: visible; }
+  .slide {
+    position: static !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+    page-break-after: always;
+    min-height: 100vh;
+    display: block !important;
+  }
+  #nav { display: none !important; }
+}
+
+/* Constraint box */
+.constraint-box {
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 0.75rem;
+}
+
+/* Protocol badges */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-right: 0.3rem;
+}
+
+.badge-blue   { background: var(--blue-500); color: #fff; }
+.badge-orange { background: var(--orange-500); color: #fff; }
+.badge-green  { background: rgba(34,197,94,0.2); color: var(--green-400); border: 1px solid var(--green-400); }
+
+/* Tag in titles */
+.tag {
+  display: inline-block;
+  background: rgba(255,107,0,0.15);
+  border: 1px solid var(--orange-500);
+  border-radius: 4px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange-400);
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+/* Diagram modal */
+#diagram-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+#diagram-modal.open { display: flex; }
+.diagram-modal-box {
+  position: relative;
+  width: 98vw;
+  height: 96vh;
+  background: var(--navy-800);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2.75rem 1rem 1rem;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.diagram-modal-box svg {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  cursor: default;
+}
+.diagram-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--navy-700);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  transition: background 0.15s;
+}
+.diagram-modal-close:hover { background: var(--navy-600); }
+</style>
+</head>
+<body>
+
+<!-- PIN LOCK SCREEN -->
+<div id="pin-overlay" style="
+  position:fixed; inset:0; z-index:9999;
+  background:var(--navy-900);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:0;
+">
+  <div style="text-align:center; margin-bottom:2rem;">
+    <div style="font-size:0.75rem; font-weight:700; letter-spacing:0.18em; color:var(--blue-400); text-transform:uppercase; margin-bottom:0.5rem;">NetApp · FSx for ONTAP</div>
+    <div style="font-size:1.5rem; font-weight:700; color:var(--text-primary);">CTO Briefing</div>
+    <div style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">Enter PIN to access presentation</div>
+  </div>
+
+  <!-- PIN dots -->
+  <div id="pin-dots" style="display:flex; gap:0.9rem; margin-bottom:1.8rem;">
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+  </div>
+
+  <!-- Error message -->
+  <div id="pin-error" style="
+    font-size:0.78rem; color:var(--red-400);
+    height:1.2rem; margin-bottom:1rem;
+    opacity:0; transition:opacity 0.2s;
+  ">Incorrect PIN. Try again.</div>
+
+  <!-- Keypad -->
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.65rem; width:220px;">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2</button>
+    <button class="pin-key" onclick="pinPress('3')">3</button>
+    <button class="pin-key" onclick="pinPress('4')">4</button>
+    <button class="pin-key" onclick="pinPress('5')">5</button>
+    <button class="pin-key" onclick="pinPress('6')">6</button>
+    <button class="pin-key" onclick="pinPress('7')">7</button>
+    <button class="pin-key" onclick="pinPress('8')">8</button>
+    <button class="pin-key" onclick="pinPress('9')">9</button>
+    <button class="pin-key pin-clear" onclick="pinClear()" style="font-size:0.75rem; color:var(--text-muted);">CLR</button>
+    <button class="pin-key" onclick="pinPress('0')">0</button>
+    <button class="pin-key pin-submit" onclick="pinSubmit()" style="background:var(--blue-500); color:#fff;">&#10003;</button>
+  </div>
+</div>
+
+<style>
+.pin-dot {
+  width:14px; height:14px; border-radius:50%;
+  border:2px solid var(--text-muted);
+  background:transparent;
+  transition:background 0.15s, border-color 0.15s;
+}
+.pin-dot.filled {
+  background:var(--blue-400);
+  border-color:var(--blue-400);
+}
+.pin-key {
+  width:100%; aspect-ratio:1;
+  background:var(--navy-700);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text-primary);
+  font-size:1.25rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.12s, transform 0.08s;
+  font-family:inherit;
+}
+.pin-key:hover { background:var(--navy-600); }
+.pin-key:active { transform:scale(0.93); }
+@keyframes pin-shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.pin-shake { animation:pin-shake 0.4s ease; }
+</style>
+
+<script>
+(function(){
+  const CORRECT = '5700';
+  let entered = '';
+
+  function updateDots(){
+    document.querySelectorAll('.pin-dot').forEach((d,i)=>{
+      d.classList.toggle('filled', i < entered.length);
+    });
+  }
+
+  window.pinPress = function(digit){
+    if(entered.length >= 4) return;
+    entered += digit;
+    updateDots();
+    if(entered.length === 4) setTimeout(pinSubmit, 120);
+  };
+
+  window.pinClear = function(){
+    entered = '';
+    updateDots();
+    hideError();
+  };
+
+  window.pinSubmit = function(){
+    if(entered === CORRECT){
+      const overlay = document.getElementById('pin-overlay');
+      overlay.style.transition = 'opacity 0.4s';
+      overlay.style.opacity = '0';
+      setTimeout(()=>overlay.remove(), 420);
+    } else {
+      showError();
+      const dots = document.getElementById('pin-dots');
+      dots.classList.remove('pin-shake');
+      void dots.offsetWidth;
+      dots.classList.add('pin-shake');
+      entered = '';
+      setTimeout(updateDots, 420);
+    }
+  };
+
+  function showError(){
+    document.getElementById('pin-error').style.opacity = '1';
+  }
+  function hideError(){
+    document.getElementById('pin-error').style.opacity = '0';
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(document.getElementById('pin-overlay')){
+      if(e.key >= '0' && e.key <= '9') pinPress(e.key);
+      else if(e.key === 'Backspace') { entered = entered.slice(0,-1); updateDots(); hideError(); }
+      else if(e.key === 'Enter') pinSubmit();
+    }
+  });
+})();
+</script>
+
+<div id="presentation" role="main">
+
+  <!-- SLIDE 0: BLUF -->
+  <section class="slide active" data-index="0" aria-hidden="false">
+    <h1 class="slide-title">Bottom Line Up Front</h1>
+
+    <div class="bluf-top">
+
+      <!-- Left column: shrunk burning platform + pillars box -->
+      <div style="display:flex; flex-direction:column; gap:0.65rem;">
+
+        <!-- Burning Platform (half height) -->
+        <div class="burning-platform" style="flex:0 0 auto;">
+          <div class="bp-label">&#9888; Why We Cannot Afford to Wait</div>
+          <div class="bp-title">The AI initiative is blocked right now.</div>
+          <div class="bp-body">
+            Our Data Science team has a mandate to train AI models in AWS, but their 2PB of training data has no connection to the cloud.<br>
+            Without this solution: manually copying to S3 takes <strong>~18 days</strong>, costs <strong>$46K/month</strong> in storage fees,
+            and the AI tools break on arrival because S3 doesn't support the standard file operations PyTorch and TensorFlow need.<br><br>
+            The only alternative, buying on-prem GPU servers, costs <strong>$5–8M upfront</strong> and takes 12–18 months.<br>
+            Doing nothing is the most expensive option on the table.
+          </div>
+        </div>
+
+        <!-- Why FSx ONTAP — 3 Pillars compact box -->
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem; flex:1;">
+          <div style="font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-secondary); margin-bottom:0.65rem;">Why FSx ONTAP Specifically</div>
+          <div style="display:flex; flex-direction:column; gap:0;">
+            <div style="display:flex; align-items:flex-start; gap:0.65rem; padding-bottom:0.5rem;">
+              <div style="font-size:1.1rem; flex-shrink:0; margin-top:0.05rem;">&#128279;</div>
+              <div>
+                <div style="font-size:0.8rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem;">Same Team. Zero Retraining.</div>
+                <div style="font-size:0.73rem; color:var(--text-secondary);">FSx ONTAP runs the same NetApp software as our on-prem storage: same tools, same team, operational from day one.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:0.65rem; border-top:1px solid var(--border); padding:0.5rem 0;">
+              <div style="font-size:1.1rem; flex-shrink:0; margin-top:0.05rem;">&#8652;</div>
+              <div>
+                <div style="font-size:0.8rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem;">Always Connected. Reversible at Every Step.</div>
+                <div style="font-size:0.73rem; color:var(--text-secondary);">Dedicated private link to AWS. Only changed data syncs, at configurable frequency. On-prem is always the fallback. Production is never at risk.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:0.65rem; border-top:1px solid var(--border); padding-top:0.5rem;">
+              <div style="font-size:1.1rem; flex-shrink:0; margin-top:0.05rem;">&#9883;</div>
+              <div>
+                <div style="font-size:0.8rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem;">Right Access for Each Tool. Zero Copies.</div>
+                <div style="font-size:0.73rem; color:var(--text-secondary);">GPU servers get under 1ms file access. SageMaker gets S3-style object access. Both from the exact same data, no duplicates.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recommendation -->
+      <div class="verdict-banner" style="margin-bottom:0;">
+        <div class="vb-label">Our Recommendation</div>
+        <div class="vb-title">Amazon FSx for NetApp ONTAP</div>
+        <div class="vb-body">
+          <strong style="color:var(--orange-400);">What it is:</strong> A fully managed cloud storage service offered by AWS, built on NetApp's own storage software, the same software GlobalCorp already runs on-prem. AWS handles the hardware; we manage the data.<br><br>
+
+          <strong style="color:var(--orange-400);">The configuration we are recommending:</strong><br>
+          <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:0.35rem;">
+            <div><strong>&#9656; Storage:</strong><br>FSx ONTAP <em>Single-AZ</em>, deployed within one AWS availability zone with redundant storage nodes protecting against hardware failure. Appropriate for dev, test, analytics, and training workloads where production data remains on-prem.</div>
+            <div><strong>&#9656; Fast storage (hot tier):</strong><br>FSx ONTAP automatically compresses the 2PB dataset to roughly 600–800TB of actual stored data. Of that, the active portion (~40%) stays on NVMe SSD for fast access; the rest automatically tiers to cheap S3 storage.</div>
+            <div><strong>&#9656; Cheap storage (cold tier):</strong><br>Amazon S3. Inactive data automatically moves here. No manual work. Applications still read it transparently when needed.</div>
+            <div><strong>&#9656; Network link:</strong><br>AWS Direct Connect, a dedicated private connection between our data center and AWS. No public internet. AWS ingress is free; only changed blocks sync via SnapMirror.</div>
+            <div><strong>&#9656; Compute:</strong><br>EC2 P5 GPU servers (H100 chips) for direct model training + Amazon SageMaker for managed training jobs, both reading from the same FSx ONTAP storage simultaneously. <em>(H100 was requested by the DS team. Backup D covers lower-cost GPU alternatives worth evaluating.)</em></div>
+          </div><br>
+
+          <strong style="color:var(--orange-400);">What this one system covers:</strong> AI/ML training, databases, Windows &amp; Linux file shares, home directories, all from the same storage, with the same tools our team already uses today.
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SLIDE 1: Challenge & Requirements -->
+  <section class="slide" data-index="1" aria-hidden="true">
+    <div class="slide-label">Problem Statement</div>
+    <h1 class="slide-title">The <span>Data Gravity</span> Problem</h1>
+    <p class="slide-subtitle">2 Petabytes of training data sits on-prem with no cloud connection. The storage solution must give cloud compute access to it without a disruptive one-time migration or abandoning the on-prem environment.</p>
+
+    <!-- Row 1: Situation header -->
+    <div class="section-head" style="margin-bottom:0.5rem;">The GlobalCorp Situation</div>
+
+    <!-- Row 2: Where we are + Where we're headed -->
+    <div class="two-col-equal" style="margin-bottom:0.65rem; align-items:stretch;">
+      <div class="card card--blue">
+        <div class="card-label">Where We Are Today</div>
+        <ul class="checklist">
+          <li><span class="icon icon-win">&#9679;</span> NetApp AFF high-speed storage servers on-prem, running NetApp software for years</li>
+          <li><span class="icon icon-win">&#9679;</span> 2PB of unstructured training data on-prem: high-res images and logs</li>
+          <li><span class="icon icon-win">&#9679;</span> DS team wants to train AI models on AWS using SageMaker and EC2 P5 GPU servers (H100 chips)</li>
+          <li><span class="icon icon-win">&#9679;</span> Security rule: <strong style="color:var(--orange-400)">production systems must stay on-prem</strong></li>
+        </ul>
+      </div>
+      <div class="card card--orange">
+        <div class="card-label">Where We're Headed</div>
+        <ul class="checklist">
+          <li><span class="icon icon-win">&#10140;</span> AWS handles AI training, analytics, and test/dev workloads; production stays on-prem</li>
+          <li><span class="icon icon-win">&#10140;</span> Hybrid setup is required: on-prem and cloud must work together</li>
+          <li><span class="icon icon-win">&#10140;</span> On-prem stays the master copy; AWS gets a live synchronized replica that compute jobs read from</li>
+          <li><span class="icon icon-win">&#10140;</span> File data from traditional business applications is being evaluated as an additional AI training source. Two access options under review: FSx ONTAP S3 Access Points vs AWS S3 Files</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Row 3: Must-have requirements full width -->
+    <div class="section-head" style="margin-bottom:0.5rem;">What We Need the Storage to Do</div>
+    <div class="card" style="width:100%; padding-left:0; padding-right:0;">
+      <div class="card-label" style="color:var(--green-400); padding:0 1.3rem 0.4rem 1.3rem;">Must-Have Requirements</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 1rem;">
+        <ul class="checklist" style="margin:0; padding:0 0 0 1.3rem;">
+          <li><span class="icon icon-win">&#10003;</span> Multiple EC2 instances need concurrent access to the same 2PB dataset</li>
+          <li><span class="icon icon-win">&#10003;</span> Built-in sync with on-prem NetApp storage, with no manual scripts</li>
+          <li><span class="icon icon-win">&#10003;</span> Standard file operations that AI frameworks (PyTorch, TensorFlow) depend on</li>
+        </ul>
+        <ul class="checklist" style="margin:0; padding:0 1.3rem 0 1.3rem;">
+          <li><span class="icon icon-win">&#10003;</span> S3-style object access that SageMaker needs to run training jobs</li>
+          <li><span class="icon icon-win">&#10003;</span> Fast, low-latency access: training jobs need data immediately available, not fetched on demand</li>
+          <li><span class="icon icon-win">&#10003;</span> Automatic tiering of inactive data to cheaper storage</li>
+          <li><span class="icon icon-win">&#10003;</span> Data scientists must be able to experiment with dataset copies without doubling storage consumption</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: Architectural Fit -->
+  <section class="slide" data-index="2" aria-hidden="true">
+    <div class="slide-label">Architectural Fit</div>
+    <h1 class="slide-title">Storage Architecture <span>for Distributed AI</span></h1>
+    <p class="slide-subtitle">Multiple EC2 instances &nbsp;&middot;&nbsp; Concurrent access to the same 2PB dataset &nbsp;&middot;&nbsp; Which storage type actually works?</p>
+
+    <table class="comparison-table" style="table-layout:fixed;">
+      <colgroup>
+        <col style="width:16%">
+        <col style="width:14%">
+        <col style="width:26%">
+        <col style="width:30%">
+        <col style="width:14%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Storage Type</th>
+          <th>AWS Service</th>
+          <th style="color:var(--green-400);">&#10003; Genuine Strength</th>
+          <th style="color:var(--red-400);">&#10007; Why It Doesn't Work Here</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="criteria-col" style="font-weight:600;">Block Storage<br><span style="font-size:0.72rem; font-weight:400; color:var(--text-muted);">(dedicated disk per server)</span></td>
+          <td style="font-size:0.75rem; color:var(--text-secondary);">Amazon EBS</td>
+          <td class="cell-win" style="font-size:0.76rem;">Fastest possible response time (&lt;0.5ms), highest read/write speed. Perfect for single-server workloads like databases or model checkpointing.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">&#10007; Designed for one server at a time. Shared mode is limited to 16 instances in the same data center zone. For multiple EC2 instances, each would need its own copy of the data, multiplying the 2PB footprint by the number of instances.</td>
+          <td class="cell-fail" style="font-size:0.8rem; font-weight:700; text-align:center;">Fails: can't share data across servers</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="font-weight:600;">Object Storage<br><span style="font-size:0.72rem; font-weight:400; color:var(--text-muted);">(files stored as objects, accessed via web API)</span></td>
+          <td style="font-size:0.75rem; color:var(--text-secondary);">Amazon S3</td>
+          <td class="cell-win" style="font-size:0.76rem;">Unlimited scale, cheapest ($0.023/GB/month), natively understood by Amazon SageMaker, no servers to manage. The best economics for rarely-accessed data in the industry.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">&#10007; 5–20 milliseconds to fetch each file. Training on 128 images = 128 separate fetches = up to 2.5 second pause per training step while the GPU sits idle. Amazon's Mountpoint for S3 has limited file operation support: no rename, no file locking, no random writes. AI frameworks like PyTorch and TensorFlow depend on these operations, making Mountpoint an unreliable foundation for training workloads.<br><br><span style="color:var(--green-400);">As the FabricPool cold tier, these limitations do not apply.</span></td>
+          <td class="cell-warn" style="font-size:0.8rem; font-weight:700; text-align:center;">Used as cold tier, not primary storage</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="font-weight:600;">Shared File Storage<br><span style="font-size:0.72rem; font-weight:400; color:var(--text-muted);">(network file share, many servers, same files)</span></td>
+          <td style="font-size:0.75rem; color:var(--text-secondary);">Amazon EFS</td>
+          <td class="cell-win" style="font-size:0.76rem;">True shared file access across unlimited EC2 servers simultaneously. Full standard file operations (POSIX). No capacity limits, grows automatically. 99.99% availability (Multi-AZ).</td>
+          <td class="cell-fail" style="font-size:0.76rem;">&#10007; File sharing only, with no object storage interface that SageMaker needs. No built-in sync with our on-prem NetApp storage. Basic tiering to EFS-IA only, with no tiering to S3 or cold object storage. No data compression. $0.30/GB/month = $614,000/month for our 2PB.</td>
+          <td class="cell-fail" style="font-size:0.8rem; font-weight:700; text-align:center;">Fails: missing S3 access and hybrid sync</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="font-weight:600; color:var(--green-400);">Shared File Storage</td>
+          <td style="font-size:0.75rem; color:var(--text-secondary);">FSx for NetApp ONTAP</td>
+          <td class="cell-win" style="font-size:0.76rem;">Everything EFS does <em>plus</em>: object storage access (S3-style) on the exact same data, with no copies. Built-in sync with on-prem NetApp (SnapMirror). Instant experiment copies that cost nearly nothing (FlexClone). Automatic tiering to cheaper storage via FabricPool. Deduplication savings across experiment copies. Same tools our team already knows. List price $0.065/GB/month (Single-AZ), cheaper than EFS ($0.30/GB) before tiering and dedup savings, which reduce effective cost further. Actual savings confirmed by pilot.</td>
+          <td style="font-size:0.76rem; color:var(--text-muted); padding:0.5rem 0.75rem; vertical-align:top; font-style:italic;">No significant drawback for this workload.</td>
+          <td class="cell-win" style="font-size:0.8rem; font-weight:700; text-align:center;">&#10003; Meets all requirements</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:1rem; background:linear-gradient(135deg,rgba(0,103,197,0.15),rgba(0,103,197,0.05)); border:1px solid var(--blue-500); border-radius:8px; padding:0.75rem 1.25rem;">
+      <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">&#127919; Why FSx ONTAP is the right fit</div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.3rem;">
+        <li style="font-size:0.78rem; color:var(--text-primary);">&#10007; <strong>Block (EBS)</strong>: cannot be shared across multiple EC2 instances at the scale required</li>
+        <li style="font-size:0.78rem; color:var(--text-primary);">&#10007; <strong>Object (S3 alone)</strong>: too slow for training; Mountpoint-for-S3 breaks file operations AI frameworks depend on. Note: S3 is not a competitor here; it is the FabricPool cold storage tier underneath FSx ONTAP.</li>
+        <li style="font-size:0.78rem; color:var(--text-primary);">&#10007; <strong>Generic shared file (EFS)</strong>: NFS only, which forces a second storage system for SageMaker and a second copy of the 2PB</li>
+        <li style="font-size:0.78rem; color:var(--green-400);">&#10003; <strong>FSx ONTAP</strong>: NFS for EC2 P5 and S3 Access Point for SageMaker on the <strong>same data, zero copies, one system</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: S3 Files vs FSx ONTAP S3 AP -->
+  <section class="slide" data-index="3" aria-hidden="true">
+    <div class="slide-label">AI Training Storage: Required Evaluation</div>
+    <h1 class="slide-title">S3 Files <span>vs</span> FSx ONTAP S3 Access Points</h1>
+    <p class="slide-subtitle">Two options evaluated for how traditional application file data stored on-prem can be accessed for AI model training in AWS: FSx ONTAP S3 Access Points vs AWS S3 Files.</p>
+
+    <table class="comparison-table" style="table-layout:fixed;">
+      <colgroup>
+        <col style="width:20%">
+        <col style="width:40%">
+        <col style="width:40%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th></th>
+          <th style="color:var(--red-400);">Option A: AWS S3 Files</th>
+          <th style="color:var(--green-400);">&#10003; Option B: FSx ONTAP S3 Access Points</th>
+        </tr>
+        <tr>
+          <td></td>
+          <td style="font-size:0.76rem; color:var(--text-secondary); padding:0.25rem 0.75rem 0.5rem;">Copy data to Amazon S3. SageMaker reads from S3.</td>
+          <td style="font-size:0.76rem; color:var(--text-secondary); padding:0.25rem 0.75rem 0.5rem;">Traditional file data accessible to SageMaker via S3 Access Points, no conversion needed.</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="criteria-col">Data Movement to AWS</td>
+          <td class="cell-fail" style="font-size:0.76rem;">No native integration with on-prem NetApp AFF.<br>Requires AWS DataSync or custom tooling to move data to S3, adding setup cost and operational overhead.</td>
+          <td class="cell-win" style="font-size:0.76rem;">SnapMirror replicates incrementally from on-prem AFF, transferring only changed blocks.<br>Built-in NetApp feature, no additional tooling needed.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Protocol Support</td>
+          <td class="cell-fail" style="font-size:0.76rem;">S3 only.<br>Traditional application file data must be converted or restructured into S3-compatible object format.<br>The original file structure is not preserved as-is.</td>
+          <td class="cell-win" style="font-size:0.76rem;">Traditional application file data is accessible via S3 Access Points on the same volume.<br>No format conversion, no duplication, no second system required.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">SageMaker Access</td>
+          <td class="cell-win" style="font-size:0.76rem;">Works natively.<br>SageMaker is designed to read training data directly from S3.<br>Genuine strength.</td>
+          <td class="cell-win" style="font-size:0.76rem;">FSx ONTAP exposes an S3-compatible endpoint on the same volume.<br>SageMaker reads natively, zero extra copies, zero extra storage cost.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Keeping Data in Sync</td>
+          <td class="cell-fail" style="font-size:0.76rem;">No native sync with NetApp AFF.<br>Requires AWS DataSync or custom scripts, adding operational overhead with no guarantee of consistency with the on-prem master copy.</td>
+          <td class="cell-win" style="font-size:0.76rem;">SnapMirror sends only changed blocks since last sync, not a full dataset rescan.<br>Automatic, consistent, no scripts needed.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Experiment Copies</td>
+          <td class="cell-fail" style="font-size:0.76rem;">No zero-copy mechanism in S3.<br>If data scientists need isolated subsets for different training runs, each requires a full copy.<br>Storage consumption grows accordingly.</td>
+          <td class="cell-win" style="font-size:0.76rem;">FlexClone creates instant zero-copy clones of the dataset.<br>Storage is only consumed when data actually changes, keeping experiment overhead low.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Team Operations</td>
+          <td class="cell-fail" style="font-size:0.76rem;">Completely separate from on-prem storage.<br>Team must learn new tools and manage two independent systems simultaneously.</td>
+          <td class="cell-win" style="font-size:0.76rem;">Same ONTAP tooling the team uses on-prem today.<br>NetApp BlueXP provides one unified management console across on-prem and cloud.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="winner-banner">
+      <strong>FSx ONTAP S3 Access Points is the recommended option for leveraging traditional application file data for AI training.</strong>
+      <ul style="margin-top:0.5rem; padding-left:1.25rem; display:flex; flex-direction:column; gap:0.25rem;">
+        <li>Data stays in its original format on FSx ONTAP. No conversion, no restructuring required.</li>
+        <li>SageMaker reads directly via the S3-compatible endpoint on the same volume. No extra copy, no extra storage cost.</li>
+        <li>SnapMirror keeps the cloud copy synchronized with the on-prem source as data changes. The training data stays current automatically.</li>
+        <li>With S3 Files, data must first be copied and potentially reformatted into S3, adding overhead and breaking the live connection to the on-prem source.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: Architecture -->
+  <section class="slide" data-index="4" aria-hidden="true">
+    <div class="slide-label">Solution Overview</div>
+    <h1 class="slide-title">Unified <span>Hybrid Storage</span> Platform</h1>
+    <p class="slide-subtitle">On-prem AFF as source of truth &nbsp;&middot;&nbsp; FSx ONTAP as cloud extension &nbsp;&middot;&nbsp; EC2 + SageMaker as compute</p>
+
+    <!-- General storage use cases — horizontal strip -->
+    <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.5rem 1.25rem; margin-bottom:0.65rem; display:flex; align-items:center; gap:1.5rem;">
+      <div style="font-size:0.68rem; font-weight:600; color:var(--blue-400); text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">General Storage Use Cases</div>
+      <div style="width:1px; align-self:stretch; background:var(--border); flex-shrink:0;"></div>
+      <div style="display:flex; gap:2rem; flex:1;">
+        <div style="flex:1;">
+          <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#128450; Databases</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Dev/test database instances connect to FSx ONTAP via iSCSI, the same block protocol used on-prem. Production databases remain on NetApp AFF on-prem per security policy.</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#128193; File Shares</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Dev/test file shares for the data science team run on FSx ONTAP alongside AI/ML storage. Production file shares remain on-prem. Same ONTAP tooling manages both environments.</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#128100; Home Directories</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Each data scientist gets a personal home directory on FSx ONTAP. FlexClone lets them spin up instant zero-copy dataset copies for experiments, with no storage overhead until data actually changes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SVG full width -->
+    <div style="margin-bottom:0.75rem;">
+    <svg id="arch-diagram" viewBox="0 0 1000 378" xmlns="http://www.w3.org/2000/svg"
+         style="height:440px; width:auto; max-width:100%; display:block; margin:0 auto; cursor:zoom-in;"
+         title="Click to enlarge"
+         font-family="Segoe UI, system-ui, sans-serif">
+
+      <!-- Background zones -->
+      <rect x="8" y="8" width="185" height="324" rx="8" fill="rgba(30,46,69,0.35)" stroke="#2A3A52" stroke-width="1"/>
+      <text x="100" y="26" text-anchor="middle" font-size="9" fill="#6B7E96" letter-spacing="2" font-weight="600">ON-PREMISES</text>
+
+      <rect x="205" y="8" width="747" height="324" rx="8" fill="rgba(0,103,197,0.05)" stroke="#0067c5" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="578" y="26" text-anchor="middle" font-size="9" fill="#0067c5" letter-spacing="2" font-weight="600">AWS VPC</text>
+
+      <rect x="743" y="15" width="203" height="310" rx="6" fill="rgba(30,46,69,0.25)" stroke="none"/>
+      <text x="844" y="29" text-anchor="middle" font-size="9" fill="#6B7E96" letter-spacing="2" font-weight="600">COMPUTE</text>
+
+      <!-- Production Apps (on-prem) -->
+      <rect x="26" y="36" width="148" height="40" rx="4" fill="rgba(17,26,43,0.8)" stroke="#2A3A52" stroke-width="1"/>
+      <text x="100" y="51" text-anchor="middle" font-size="8" fill="#B7C4D6" font-weight="600">Production Apps</text>
+      <text x="100" y="64" text-anchor="middle" font-size="6.5" fill="#6B7E96">DBs · File Shares · Business Apps</text>
+      <line x1="100" y1="76" x2="100" y2="86" stroke="#2A3A52" stroke-width="1.5"/>
+      <polygon points="96,83 100,87 104,83" fill="#2A3A52"/>
+
+      <!-- NetApp AFF Node -->
+      <ellipse cx="100" cy="100" rx="52" ry="13" fill="#162236" stroke="#0067c5" stroke-width="1.5"/>
+      <rect x="48" y="100" width="104" height="58" fill="#162236" stroke="#0067c5" stroke-width="1.5"/>
+      <ellipse cx="100" cy="158" rx="52" ry="13" fill="#111A2B" stroke="#0067c5" stroke-width="1.5"/>
+      <text x="100" y="126" text-anchor="middle" font-size="10" fill="#35C2FF" font-weight="700">NetApp AFF</text>
+      <text x="100" y="140" text-anchor="middle" font-size="8" fill="#B7C4D6">2PB On-Prem</text>
+      <rect x="68" y="171" width="64" height="16" rx="3" fill="#0067c5"/>
+      <text x="100" y="182" text-anchor="middle" font-size="8" fill="white" font-weight="600">ONTAP</text>
+
+      <text x="100" y="210" text-anchor="middle" font-size="8" fill="#6B7E96">File + Block + Object</text>
+      <text x="100" y="226" text-anchor="middle" font-size="6.5" fill="#ff8c2e" font-style="italic">Source of truth · stays on-prem</text>
+
+      <!-- DX / VPN pipe -->
+      <line x1="152" y1="130" x2="213" y2="130" stroke="#ff6b00" stroke-width="2.5" stroke-dasharray="7,4"/>
+      <polygon points="209,125 220,130 209,135" fill="#ff6b00"/>
+      <text x="183" y="122" text-anchor="middle" font-size="8" fill="#ff6b00" font-weight="700">SnapMirror</text>
+      <text x="183" y="144" text-anchor="middle" font-size="7" fill="#B7C4D6">Direct Connect</text>
+
+      <!-- FSx ONTAP main box -->
+      <rect x="223" y="42" width="260" height="145" rx="8" fill="#162236" stroke="#0067c5" stroke-width="2"/>
+      <text x="353" y="62" text-anchor="middle" font-size="11" fill="#35C2FF" font-weight="700">FSx for NetApp ONTAP</text>
+      <text x="353" y="74" text-anchor="middle" font-size="8" fill="#6B7E96">Single-AZ Deployment</text>
+
+      <!-- Hot tier -->
+      <rect x="236" y="82" width="234" height="22" rx="4" fill="rgba(0,103,197,0.18)" stroke="#0067c5" stroke-width="1"/>
+      <text x="353" y="93" text-anchor="middle" font-size="9" fill="#35C2FF" font-weight="600">HOT TIER · SSD</text>
+
+      <!-- Protocol badges -->
+      <rect x="236" y="110" width="44" height="18" rx="3" fill="#0067c5"/>
+      <text x="258" y="122" text-anchor="middle" font-size="8.5" fill="white" font-weight="700">NFS</text>
+
+      <rect x="285" y="110" width="44" height="18" rx="3" fill="#0067c5"/>
+      <text x="307" y="122" text-anchor="middle" font-size="8.5" fill="white" font-weight="700">SMB</text>
+
+      <rect x="334" y="110" width="52" height="18" rx="3" fill="#0067c5"/>
+      <text x="360" y="122" text-anchor="middle" font-size="8.5" fill="white" font-weight="700">S3 AP</text>
+
+      <rect x="391" y="110" width="79" height="18" rx="3" fill="rgba(0,103,197,0.15)" stroke="#0067c5" stroke-width="1"/>
+      <text x="430" y="122" text-anchor="middle" font-size="8" fill="#35C2FF" font-weight="700">iSCSI (DBs)</text>
+
+      <!-- Key differentiator -->
+      <text x="353" y="147" text-anchor="middle" font-size="8" fill="#6B7E96">NFS · SMB · S3 AP · iSCSI</text>
+      <text x="353" y="158" text-anchor="middle" font-size="7.5" fill="#4A8C6A">One dataset, no duplicate copies</text>
+
+      <!-- FabricPool arrow (bidirectional) -->
+      <line x1="353" y1="196" x2="353" y2="274" stroke="#ff6b00" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <polygon points="348,274 353,285 358,274" fill="#ff6b00"/>
+      <polygon points="348,196 353,187 358,196" fill="#ff6b00"/>
+      <text x="361" y="232" font-size="7.5" fill="#6B7E96">FabricPool</text>
+      <text x="361" y="243" font-size="7.5" fill="#6B7E96">auto-tier</text>
+
+      <!-- S3 cold tier -->
+      <rect x="223" y="288" width="260" height="40" rx="6" fill="#0B1220" stroke="#6B7E96" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="353" y="305" text-anchor="middle" font-size="9.5" fill="#B7C4D6" font-weight="600">Amazon S3</text>
+      <text x="353" y="317" text-anchor="middle" font-size="7.5" fill="#6B7E96">COLD TIER · Retrieved on demand</text>
+
+      <!-- AI Training grouping -->
+      <rect x="746" y="36" width="170" height="201" rx="5" fill="rgba(34,197,94,0.04)" stroke="#22c55e" stroke-width="0.75" stroke-dasharray="3,2"/>
+      <rect x="793" y="31" width="76" height="11" rx="2" fill="#162236"/>
+      <text x="831" y="40" text-anchor="middle" font-size="6.5" fill="#22c55e" letter-spacing="1.5" font-weight="600">AI TRAINING</text>
+
+      <!-- EC2 GPU Cluster -->
+      <rect x="750" y="42" width="162" height="90" rx="8" fill="#162236" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="831" y="60" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="700">EC2 GPU Cluster</text>
+      <text x="831" y="75" text-anchor="middle" font-size="7.5" fill="#22c55e">P5 instances</text>
+      <text x="831" y="89" text-anchor="middle" font-size="7.5" fill="#B7C4D6">AI model training</text>
+      <rect x="765" y="96" width="132" height="16" rx="3" fill="rgba(0,103,197,0.2)" stroke="#0067c5" stroke-width="1"/>
+      <text x="831" y="107" text-anchor="middle" font-size="7.5" fill="#35C2FF">NFS v4.1 mount from FSx ONTAP</text>
+
+      <!-- SageMaker -->
+      <rect x="750" y="150" width="162" height="80" rx="8" fill="#162236" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="831" y="170" text-anchor="middle" font-size="11" fill="#22c55e" font-weight="700">SageMaker</text>
+      <text x="831" y="183" text-anchor="middle" font-size="8" fill="#B7C4D6">Training Jobs</text>
+      <rect x="765" y="190" width="132" height="16" rx="3" fill="rgba(0,103,197,0.15)" stroke="#0067c5" stroke-width="1"/>
+      <text x="831" y="201" text-anchor="middle" font-size="7.5" fill="#35C2FF">S3 Access Point endpoint</text>
+
+      <!-- Dev/Test -->
+      <rect x="750" y="248" width="162" height="72" rx="8" fill="#0B1220" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
+      <text x="831" y="263" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="600">Dev / Test</text>
+      <text x="831" y="275" text-anchor="middle" font-size="7.5" fill="#6B7E96">FlexClone: experiment sandbox</text>
+      <text x="831" y="287" text-anchor="middle" font-size="7.5" fill="#6B7E96">Modify data without touching source</text>
+      <text x="831" y="299" text-anchor="middle" font-size="7.5" fill="#6B7E96">Pay only delta blocks</text>
+
+      <!-- Connectors: EC2 P5 ↔ FSx (NFS, bidirectional) -->
+      <line x1="500" y1="90" x2="734" y2="82" stroke="#22c55e" stroke-width="2"/>
+      <polygon points="744,82 734,77 734,87" fill="#22c55e"/>
+      <polygon points="488,90 500,85 500,95" fill="#22c55e"/>
+      <text x="614" y="76" text-anchor="middle" font-size="8" fill="#22c55e" font-weight="600" transform="rotate(-2, 614, 76)">NFS v4.1</text>
+
+      <!-- Connectors: SageMaker ↔ FSx (S3 AP, bidirectional) -->
+      <line x1="500" y1="132" x2="734" y2="185" stroke="#22c55e" stroke-width="2"/>
+      <polygon points="744,187 733,190 735,180" fill="#22c55e"/>
+      <polygon points="488,130 500,126 500,136" fill="#22c55e"/>
+      <text x="614" y="147" text-anchor="middle" font-size="8" fill="#22c55e" font-weight="600" transform="rotate(11, 614, 147)">S3 Access Point</text>
+
+      <!-- Right-side bracket: clone accessible from EC2 + SageMaker -->
+      <line x1="912" y1="87"  x2="925" y2="87"  stroke="#22c55e" stroke-width="1" opacity="0.6"/>
+      <line x1="912" y1="190" x2="925" y2="190" stroke="#22c55e" stroke-width="1" opacity="0.6"/>
+      <line x1="912" y1="284" x2="925" y2="284" stroke="#22c55e" stroke-width="1" opacity="0.6"/>
+      <line x1="925" y1="87"  x2="925" y2="284" stroke="#22c55e" stroke-width="1" opacity="0.6" stroke-dasharray="3,2"/>
+      <polygon points="914,84 912,87 914,90" fill="#22c55e" opacity="0.6"/>
+      <polygon points="914,187 912,190 914,193" fill="#22c55e" opacity="0.6"/>
+      <text x="937" y="190" text-anchor="middle" font-size="6.5" fill="#22c55e" opacity="0.8" transform="rotate(90,937,190)">Clone served via same protocols</text>
+
+      <!-- Connectors: FSx → Dev/Test (FlexClone) -->
+      <line x1="483" y1="157" x2="737" y2="274" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <polygon points="748,278 737,279 741,270" fill="#22c55e"/>
+      <text x="610" y="210" text-anchor="middle" font-size="7.5" fill="#22c55e" transform="rotate(23, 610, 210)">FlexClone (experimental copy)</text>
+
+      <!-- Legend — bottom strip -->
+      <line x1="8" y1="340" x2="952" y2="340" stroke="#2A3A52" stroke-width="0.5"/>
+      <circle cx="80" cy="357" r="4" fill="#0067c5"/>
+      <text x="90" y="361" font-size="7.5" fill="#B7C4D6">Storage layer</text>
+      <line x1="218" y1="357" x2="242" y2="357" stroke="#ff6b00" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="244,354 250,357 244,360" fill="#ff6b00"/>
+      <text x="255" y="361" font-size="7.5" fill="#B7C4D6">Automated data movement</text>
+      <circle cx="450" cy="357" r="4" fill="#22c55e"/>
+      <text x="460" y="361" font-size="7.5" fill="#B7C4D6">Compute workloads</text>
+      <circle cx="620" cy="357" r="4" fill="#6B7E96"/>
+      <text x="630" y="361" font-size="7.5" fill="#B7C4D6">Infrastructure</text>
+      <line x1="760" y1="357" x2="785" y2="357" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="787,354 793,357 787,360" fill="#22c55e"/>
+      <text x="798" y="361" font-size="7.5" fill="#B7C4D6">Logical clone, no data copy</text>
+    </svg>
+
+    </div><!-- /SVG wrapper -->
+
+    <!-- Hybrid Integration + Data Lifecycle side by side -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+
+      <!-- Hybrid Integration -->
+      <div style="background:var(--navy-700); border:1px solid var(--orange-500); border-radius:8px; padding:0.6rem 1rem; display:flex; flex-direction:column; gap:0.4rem;">
+        <div style="font-size:0.68rem; font-weight:600; color:var(--orange-400); text-transform:uppercase; letter-spacing:0.05em;">Hybrid Integration</div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; SnapMirror</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">Built-in NetApp replication syncs on-prem AFF to FSx ONTAP automatically. Same technology the team already uses. No new tools.</div>
+          </div>
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; Priority-first transfer</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">Copy the most critical training data first. DS team can begin on prioritized data while the rest syncs in the background.</div>
+          </div>
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; No AWS ingress charges</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">Direct Connect carries no AWS ingress charges. After initial sync, only changed blocks are sent each day, not the full 2PB.</div>
+          </div>
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; Full detail in Backup C</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">Phased migration timeline, phase gates, and prerequisites.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Lifecycle & Efficiency -->
+      <div style="background:var(--navy-700); border:1px solid var(--blue-500); border-radius:8px; padding:0.6rem 1rem; display:flex; flex-direction:column; gap:0.4rem;">
+        <div style="font-size:0.68rem; font-weight:600; color:var(--blue-400); text-transform:uppercase; letter-spacing:0.05em;">Data Lifecycle</div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; Hot / Cold tiering</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">FabricPool automatically moves inactive data to S3 Intelligent-Tiering. Active data stays fast, cold data costs less. Transparent to applications.</div>
+          </div>
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; Experiment without doubling storage</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">FlexClone creates instant zero-copy dataset clones. Storage only consumed when data actually changes.</div>
+          </div>
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; Incremental snapshots</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">ONTAP Snapshots save only changed blocks, not full copies. Protects training data and results at any point in time without duplicating the full dataset.</div>
+          </div>
+          <div>
+            <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#9656; Full detail in Backup A</div>
+            <div style="font-size:0.73rem; color:var(--text-secondary); margin-top:0.1rem;">Cost model, tiering policies, and FlexClone workflow.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SLIDE 5: Backup Divider -->
+  <section class="slide slide--divider" data-index="5" aria-hidden="true">
+    <div class="divider-rule"></div>
+    <div class="divider-title">Backup Slides</div>
+    <div class="divider-sub">Available for Q&amp;A Discussion</div>
+    <div class="divider-rule"></div>
+    <div class="divider-index">
+      <a onclick="goToSlide(6)"><span class="divider-tag">A</span> Data Lifecycle &amp; Efficiency: Cost Management at 2PB Scale</a>
+      <a onclick="goToSlide(7)"><span class="divider-tag">B</span> Cost Model &amp; TCO Analysis</a>
+      <a onclick="goToSlide(8)"><span class="divider-tag">C</span> Migration Timeline &amp; Phases</a>
+      <a onclick="goToSlide(9)"><span class="divider-tag" style="color:var(--orange-400); border-color:var(--orange-500);">D</span> Compute Optimization: Beyond EC2 P5</a>
+      <a onclick="goToSlide(10)"><span class="divider-tag" style="color:var(--orange-400); border-color:var(--orange-500);">E</span> FSx for Lustre: Why Not the Purpose-Built ML Option?</a>
+      <a onclick="goToSlide(11)"><span class="divider-tag" style="color:var(--green-400); border-color:var(--green-400);">F</span> Success Metrics: How We Know It Worked</a>
+      <a onclick="goToSlide(12)"><span class="divider-tag" style="color:var(--blue-400); border-color:var(--blue-400);">G</span> Stakeholder Map: Who Needs to Say Yes</a>
+    </div>
+  </section>
+
+  <!-- BACKUP A: Data Lifecycle & Efficiency -->
+  <section class="slide" data-index="6" aria-hidden="true">
+    <div class="slide-label">Backup A: Data Lifecycle &amp; Efficiency</div>
+    <h1 class="slide-title">Four Mechanisms. <span>No Wasted Storage.</span></h1>
+    <p class="slide-subtitle">FSx ONTAP manages data lifecycle automatically &nbsp;&middot;&nbsp; No scripts &nbsp;&middot;&nbsp; No application changes &nbsp;&middot;&nbsp; Tiering and compression run without human input</p>
+
+    <!-- Unified step + mechanism cards -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.55rem; margin-bottom:0.6rem;">
+
+      <div style="border-top:2px solid var(--blue-500); background:var(--navy-700); border-radius:8px; padding:0.75rem;">
+        <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+          <span style="font-size:0.6rem; font-weight:700; color:var(--blue-400); background:rgba(0,103,197,0.15); border:1px solid var(--blue-500); border-radius:3px; padding:0.1rem 0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Mechanism 1</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Active data</span>
+        </div>
+        <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.3rem;">Dedup &amp; Compression</div>
+        <div style="font-size:0.72rem; color:var(--blue-400); margin-bottom:0.45rem; padding-bottom:0.45rem; border-bottom:1px solid var(--border);">Data arrives via SnapMirror onto the hot SSD tier; footprint reduced automatically.</div>
+        <div style="font-size:0.72rem; color:var(--text-secondary);">Compression runs inline at write time; dedup runs as a background process. Savings vary by data type: greater for logs and text, lower for already-compressed image formats.</div>
+      </div>
+
+      <div style="border-top:2px solid var(--orange-500); background:var(--navy-700); border-radius:8px; padding:0.75rem;">
+        <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+          <span style="font-size:0.6rem; font-weight:700; color:var(--orange-400); background:rgba(255,107,0,0.12); border:1px solid var(--orange-500); border-radius:3px; padding:0.1rem 0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Mechanism 2</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Inactive data</span>
+        </div>
+        <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.3rem;">Automatic Tiering (FabricPool)</div>
+        <div style="font-size:0.72rem; color:var(--orange-400); margin-bottom:0.45rem; padding-bottom:0.45rem; border-bottom:1px solid var(--border);">Inactive data cools automatically to Amazon S3. Transparent to applications.</div>
+        <div style="font-size:0.72rem; color:var(--text-secondary);">Data unused for X days (configurable) moves from SSD to S3. When accessed again, retrieved transparently with no code changes or manual steps.</div>
+      </div>
+
+      <div style="border-top:2px solid var(--green-400); background:var(--navy-700); border-radius:8px; padding:0.75rem;">
+        <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+          <span style="font-size:0.6rem; font-weight:700; color:var(--green-400); background:rgba(34,197,94,0.12); border:1px solid var(--green-400); border-radius:3px; padding:0.1rem 0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Mechanism 3</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Experiments</span>
+        </div>
+        <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.3rem;">Zero-Copy Clones (FlexClone)</div>
+        <div style="font-size:0.72rem; color:var(--green-400); margin-bottom:0.45rem; padding-bottom:0.45rem; border-bottom:1px solid var(--border);">Researchers create instant writable copies of the dataset.</div>
+        <div style="font-size:0.72rem; color:var(--text-secondary);">All unchanged blocks are shared with the original. Storage is only consumed for blocks the researcher actually changes. Each data scientist gets an independent copy without duplicating the dataset.</div>
+      </div>
+
+      <div style="border-top:2px solid var(--red-400); background:var(--navy-700); border-radius:8px; padding:0.75rem;">
+        <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+          <span style="font-size:0.6rem; font-weight:700; color:var(--red-400); background:rgba(248,113,113,0.12); border:1px solid var(--red-400); border-radius:3px; padding:0.1rem 0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Mechanism 4</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Recovery</span>
+        </div>
+        <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.3rem;">Point-in-Time Snapshots</div>
+        <div style="font-size:0.72rem; color:var(--red-400); margin-bottom:0.45rem; padding-bottom:0.45rem; border-bottom:1px solid var(--border);">Instant rollback safety net for datasets and experiments.</div>
+        <div style="font-size:0.72rem; color:var(--text-secondary);">Only changed blocks are stored per snapshot, so storage overhead is minimal. If a data pipeline corrupts a dataset or a FlexClone experiment goes wrong, any prior state can be restored instantly. No performance impact during creation. Applications keep running at full speed.</div>
+      </div>
+
+    </div>
+
+    <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.5rem 1.25rem; display:flex; align-items:center; gap:1rem;">
+      <div style="font-size:0.78rem; color:var(--text-secondary);">&#128202; Cost impact of these mechanisms on a 2PB dataset is detailed in <strong style="color:var(--text-primary);">Backup B: Financial Analysis</strong>.</div>
+    </div>
+  </section>
+
+  <!-- BACKUP B: Cost Model -->
+  <section class="slide" data-index="7" aria-hidden="true">
+    <div class="slide-label">Backup B: Financial Analysis</div>
+    <h1 class="slide-title">Storage Cost <span>Comparison</span></h1>
+    <p class="slide-subtitle">3-year storage costs · 2PB dataset · us-east-1 pricing · approximate figures · compute and SageMaker charges not included</p>
+
+    <div class="two-col-equal" style="align-items:stretch;">
+      <div>
+        <div class="section-head">Storage Cost Comparison</div>
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th>Solution</th>
+              <th>$/GB per month</th>
+              <th>Monthly (2PB)</th>
+              <th>3-Year</th>
+              <th>Qualifies</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Amazon EBS (dedicated disk)</td>
+              <td>$0.08</td>
+              <td>$163,840</td>
+              <td class="cell-fail">$5.9M</td>
+              <td class="cell-fail" style="text-align:center; font-weight:700;">No</td>
+            </tr>
+            <tr>
+              <td>Amazon EFS (shared file)</td>
+              <td>$0.30</td>
+              <td>$614,400</td>
+              <td class="cell-fail">$22.1M</td>
+              <td class="cell-fail" style="text-align:center; font-weight:700;">No</td>
+            </tr>
+            <tr>
+              <td>Amazon S3 Standard (object)</td>
+              <td>$0.023</td>
+              <td>$47,104</td>
+              <td class="cell-warn">$1.7M</td>
+              <td class="cell-fail" style="text-align:center; font-weight:700;">No</td>
+            </tr>
+            <tr>
+              <td>S3 Auto-Tiering (Intelligent-Tiering)</td>
+              <td>~$0.018</td>
+              <td>$36,864</td>
+              <td class="cell-warn">$1.3M</td>
+              <td class="cell-fail" style="text-align:center; font-weight:700;">No</td>
+            </tr>
+            <tr>
+              <td>FSx ONTAP SSD (Single-AZ, list price, no tiering)</td>
+              <td>$0.065</td>
+              <td>~$133,000</td>
+              <td>~$4.8M</td>
+              <td class="cell-warn" style="text-align:center; font-weight:700;">Partial</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>FSx ONTAP <em>+ FabricPool tiering (40% hot SSD / 60% cold S3)</em></td>
+              <td>blended ~$0.040</td>
+              <td>~$81,500</td>
+              <td class="cell-win">~$2.9M effective</td>
+              <td class="cell-win" style="text-align:center; font-weight:700;">&#10003; Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; flex-direction:column;">
+        <div class="section-head">FlexClone Savings Example</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.6rem;">
+          <div class="card card--green" style="padding:0.5rem 0.75rem;">
+            <div class="card-label" style="margin-bottom:0.25rem;">Without FlexClone</div>
+            10 scientists &times; 500GB = 5TB full copies<br>
+            = <strong style="color:var(--red-400);">$650/month</strong>
+          </div>
+          <div class="card card--green" style="padding:0.5rem 0.75rem;">
+            <div class="card-label" style="margin-bottom:0.25rem;">With FlexClone</div>
+            10 clones, ~10% delta = 500GB charged<br>
+            = <strong style="color:var(--green-400);">$65/month, saving $585/month</strong>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-top:auto;">Ingress Cost: Initial 2PB Seed</div>
+        <table class="cost-table">
+          <thead>
+            <tr><th>Cost Item</th><th>Cost</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>AWS ingress (SnapMirror transfer)</td>
+              <td class="cell-win">$0</td>
+              <td>AWS does not charge for data coming in</td>
+            </tr>
+            <tr>
+              <td>Direct Connect port fee</td>
+              <td class="cell-warn">~$2,200/mo</td>
+              <td>Fixed monthly; not volume-dependent</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem; margin-top:0.65rem;">
+      <div class="card" style="font-size:0.75rem;">
+        <div class="card-label">Key insight</div>
+        Dedup and compression add further savings for text and log workloads; savings are lower for already-compressed data such as images and model weights.
+      </div>
+      <div style="background:var(--navy-700); border:2px solid var(--green-400); border-radius:8px; padding:0.55rem 1rem; display:flex; flex-direction:column; gap:0.45rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:1.5rem;">
+          <div style="font-size:0.7rem; font-weight:700; color:var(--green-400); text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">3-Year Storage TCO: Recommended Path</div>
+          <div style="display:flex; gap:2rem; align-items:baseline;">
+            <div style="text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted); margin-bottom:0.1rem;">Storage (blended)</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">~$81.5K<span style="font-size:0.65rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">+</div>
+            <div style="text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted); margin-bottom:0.1rem;">Direct Connect port</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">~$2.2K<span style="font-size:0.65rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">=</div>
+            <div style="text-align:center;">
+              <div style="font-size:0.65rem; color:var(--text-muted); margin-bottom:0.1rem;">Storage total, 3 years</div>
+              <div style="font-size:1.1rem; font-weight:700; color:var(--green-400);">~$2.9M</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:0.68rem; color:var(--text-muted); border-top:1px solid var(--border); padding-top:0.35rem;">EC2 compute and SageMaker charges are additional and depend on cluster size and utilization.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKUP C: Migration Timeline -->
+  <section class="slide" data-index="8" aria-hidden="true">
+    <div class="slide-label">Backup C: Migration Plan</div>
+    <h1 class="slide-title">Phased <span>Migration Timeline</span></h1>
+    <p class="slide-subtitle">NetApp SnapMirror syncs the data; production on-prem storage is never touched or interrupted throughout</p>
+
+    <div style="background:var(--navy-700); border:1px solid var(--yellow-400); border-radius:8px; padding:0.6rem 1rem; margin-bottom:0.75rem; display:flex; gap:2rem;">
+      <div style="font-size:0.7rem; font-weight:600; color:var(--yellow-400); text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; padding-top:0.1rem;">Prerequisites</div>
+      <div style="display:flex; gap:2rem; flex:1; flex-wrap:wrap;">
+        <div style="font-size:0.76rem; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Dataset size sign-off:</strong> 2PB confirmed, but formal sign-off needed before FSx ONTAP capacity is ordered.</div>
+        <div style="font-size:0.76rem; color:var(--text-secondary);"><strong style="color:var(--text-primary);">Security approval:</strong> data flowing over Direct Connect requires security team sign-off before Phase 1 begins.</div>
+      </div>
+    </div>
+
+    <div class="phases">
+      <div class="phase-card">
+        <div class="phase-num">Phase 1</div>
+        <div class="phase-time">Weeks 1–2</div>
+        <div class="phase-title">Foundation</div>
+        <div class="phase-body">
+          &bull; Provision FSx ONTAP Single-AZ in AWS<br>
+          &bull; Initiate Direct Connect provisioning between on-prem and AWS VPC (lead time: 4&ndash;8 weeks via AWS partner)<br>
+          &bull; Configure SnapMirror to link on-prem AFF to FSx ONTAP<br>
+          &bull; Set up NetApp BlueXP for unified management of both environments
+        </div>
+        <div class="phase-risk">Risk: None. On-prem storage is untouched</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">Phase 2</div>
+        <div class="phase-time">Weeks 3–6</div>
+        <div class="phase-title">Data Migration</div>
+        <div class="phase-body">
+          &bull; Initial SnapMirror seed: 2PB at 10Gbps ≈ 18 days (wks 3–5)<br>
+          &bull; Verify data integrity on arrival (automated checksums)<br>
+          &bull; Configure FabricPool tiering to S3 and S3 Access Points for SageMaker<br>
+          &bull; Validate with a sample training job before full go-live
+        </div>
+        <div class="phase-risk">Risk: Network bandwidth. Offset with off-peak scheduling</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">Phase 3</div>
+        <div class="phase-time">Week 7+</div>
+        <div class="phase-title">Hybrid Operations</div>
+        <div class="phase-body">
+          &bull; Incremental SnapMirror sync running automatically (changed blocks only)<br>
+          &bull; EC2 P5 reads via NFS; SageMaker reads via S3 Access Point<br>
+          &bull; FlexClone available for instant experiment copies<br>
+          &bull; Tune FabricPool tiering policy and Snapshot schedules as patterns emerge<br>
+          &bull; RPO determined by SnapMirror sync frequency (configurable)
+        </div>
+        <div class="phase-risk">Risk: Application compatibility. Validated in Phase 2 sample run</div>
+      </div>
+    </div>
+
+    <div class="metrics-bar">
+      <div class="metric">
+        <div class="metric-value">Wk 2</div>
+        <div class="metric-label">Infrastructure ready<br>to sync</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">Wk 6</div>
+        <div class="metric-label">Full 2PB replicated<br>and verified in AWS</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">Wk 7+</div>
+        <div class="metric-label">Training live,<br>ongoing hybrid operations</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKUP D: Why Not EBS/EFS/S3 — REMOVED; content folded into Slide 3 winner banner -->
+
+  <!-- BACKUP E: Compute Optimization (was E, now D) -->
+  <section class="slide" data-index="9" aria-hidden="true">
+    <div class="slide-label">Backup D: Compute Optimization</div>
+    <h1 class="slide-title">Beyond <span>EC2 P5</span></h1>
+    <p class="slide-subtitle">The Data Science team asked for P5 + SageMaker. Here's how we optimize that ask, and why FSx ONTAP stays the same regardless of which path we choose.</p>
+
+    <!-- Profile-first diagnostic -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
+      <div class="burning-platform">
+        <div class="bp-label">&#9888; The Question Nobody Asked the DS Team</div>
+        <div class="bp-title">Is the most expensive GPU actually solving the right problem?</div>
+        <div class="bp-body">
+          The requirement is <strong>"fast access to <em>specific subsets</em> of 2PB."</strong>
+          That is a <strong>data access problem</strong>, not a computing power problem. H100 GPUs
+          sit idle when storage can't feed them fast enough. Buying more GPU power when the real bottleneck is data access
+          makes training <em>slower per dollar spent</em>.<br><br>
+          "Specific subsets" may indicate fine-tuning an existing model rather than training from scratch. Fine-tuning workloads often do not saturate an H100.
+          An older GPU type (A100/P4de) or AWS's own AI chip (Trainium 2) may deliver sufficient results at meaningfully lower cost.
+        </div>
+      </div>
+      <div style="display:grid; grid-template-rows:1fr 1fr; gap:0.6rem;">
+        <div class="card card--red">
+          <div class="card-label">If storage is the bottleneck (GPU is waiting for data)</div>
+          <div class="card-body">Fix the data pipeline first. Ensuring fast NFS access and correctly sized hot-tier storage delivers more training throughput per dollar than upgrading the GPU. Choose compute <em>after</em> storage is no longer the bottleneck.</div>
+        </div>
+        <div class="card card--green">
+          <div class="card-label">If the GPU is the bottleneck (running at full capacity)</div>
+          <div class="card-body">H100 (P5) is justified, but test whether AWS Trainium 2 matches the performance at 30–40% lower cost on your specific model before committing to a full P5 fleet.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">Compute Options Comparison: All Compatible with FSx ONTAP over NFS</div>
+    <table class="comparison-table" style="margin-top:0.5rem;">
+      <thead>
+        <tr>
+          <th style="width:18%">Option</th>
+          <th style="width:12%">Cost vs P5</th>
+          <th style="width:20%">Best For</th>
+          <th style="width:22%">Key Capability</th>
+          <th style="width:16%">SDK / Compat.</th>
+          <th style="width:12%">FSx ONTAP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="criteria-col" style="white-space:normal;">EC2 P5<br><span style="font-weight:400; color:var(--text-muted); font-size:0.71rem;">H100 · Requested by DS team</span></td>
+          <td style="color:var(--text-secondary);">Baseline</td>
+          <td style="color:var(--text-secondary);">All workloads. Maximum flexibility. No porting required.</td>
+          <td style="color:var(--text-secondary);">8× H100 80GB per instance. NVLink. 3.2Tbps interconnect. Best raw performance.</td>
+          <td class="cell-win">&#10003; Native PyTorch, TF, JAX. No changes.</td>
+          <td class="cell-win">&#10003; NFS v4.1</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="white-space:normal;">EC2 Trn2<br><span style="font-weight:400; color:var(--orange-400); font-size:0.71rem;">AWS Trainium 2 &#9733; Recommended POC</span></td>
+          <td class="cell-win">Lower cost per hour than P5; actual savings depend on workload and training time</td>
+          <td style="color:var(--text-secondary);">Large transformers, LLMs, diffusion models. New workloads where pipeline can be optimised.</td>
+          <td style="color:var(--text-secondary);">Purpose-built for training. AWS claims significant price-performance advantage on transformer workloads; validate on your specific model before committing.</td>
+          <td class="cell-warn">~ AWS Neuron SDK. Requires model compilation. Not a drop-in swap: 2–4 week porting effort.</td>
+          <td class="cell-win">&#10003; NFS v4.1</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="white-space:normal;">P5 Spot Instances<br><span style="font-weight:400; color:var(--green-400); font-size:0.71rem;">Quick win, immediate savings</span></td>
+          <td class="cell-win">60–90% cheaper vs on-demand P5</td>
+          <td style="color:var(--text-secondary);">Any fault-tolerant training job with checkpointing. Most ML training qualifies with minor changes.</td>
+          <td style="color:var(--text-secondary);">SageMaker Managed Spot Training handles interruptions. Resumes from last checkpoint automatically.</td>
+          <td class="cell-win">&#10003; Zero code changes. SageMaker handles interruptions. ONTAP Snapshots = reliable checkpoints.</td>
+          <td class="cell-win">&#10003; NFS v4.1</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="white-space:normal;">SageMaker HyperPod<br><span style="font-weight:400; color:var(--text-muted); font-size:0.71rem;">Over raw EC2 P5</span></td>
+          <td style="color:var(--text-secondary);">~same as P5 on-demand</td>
+          <td style="color:var(--text-secondary);">Long multi-day distributed training runs where node failure would otherwise kill the job.</td>
+          <td style="color:var(--text-secondary);">Auto-repairs failed nodes mid-training. Built-in distributed orchestration. Reduces engineering overhead significantly.</td>
+          <td class="cell-win">&#10003; Native SageMaker. No extra SDK. Drop-in upgrade from raw P5 instances.</td>
+          <td class="cell-win">&#10003; NFS v4.1</td>
+        </tr>
+        <tr>
+          <td class="criteria-col" style="white-space:normal;">EC2 P4de<br><span style="font-weight:400; color:var(--text-muted); font-size:0.71rem;">A100 · Previous gen</span></td>
+          <td class="cell-warn">~65% cheaper per hour than P5 (fewer FLOPS; actual job savings depend on relative training speed)</td>
+          <td style="color:var(--text-secondary);">Fine-tuning, smaller models, experimentation, dev/test workloads where H100 is overkill.</td>
+          <td style="color:var(--text-secondary);">8× A100 80GB per instance. Proven, stable. Good for workloads not requiring latest interconnect speeds.</td>
+          <td class="cell-win">&#10003; Native PyTorch, TF, JAX. No changes vs P5.</td>
+          <td class="cell-win">&#10003; NFS v4.1</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+  <!-- BACKUP F: FSx for Lustre -->
+  <section class="slide" data-index="11" aria-hidden="true">
+    <div class="slide-label">Backup E: Honest Alternatives</div>
+    <h1 class="slide-title">Why Not <span>FSx for Lustre</span>?</h1>
+    <p class="slide-subtitle">AWS's storage system purpose-built for AI/ML training speed. We evaluated it seriously. Here is why FSx ONTAP still wins for GlobalCorp specifically.</p>
+
+    <div class="two-col-equal" style="margin-bottom:0.85rem;">
+
+      <!-- FSx for Lustre -->
+      <div class="card card--orange">
+        <div class="card-label">The Alternative</div>
+        <div class="card-title" style="font-size:1rem;">Amazon FSx for Lustre</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.75rem;">AWS's purpose-built high-speed storage for AI/ML and scientific computing</div>
+        <table style="width:100%; font-size:0.74rem; border-collapse:collapse;">
+          <tr><td style="padding:0.3rem 0; color:var(--text-muted); width:38%; vertical-align:top;">Speed</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Under 1ms. Built specifically for the random read patterns of AI training. Very fast.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Throughput</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Hundreds of GB/second. Scales by adding more storage servers. Best raw speed for ML.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">S3 Integration</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Can use S3 as its underlying storage. Loads data from S3 automatically on first access.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">SageMaker</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Works with SageMaker via Lustre protocol (SageMaker mounts the filesystem directly using the Lustre client).</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Sync from On-Prem</td>
+              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; No built-in NetApp sync. Requires AWS DataSync or custom scripts to transfer from on-prem AFF. DataSync is incremental (only changed files), but adds operational overhead vs. native SnapMirror.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Experiment Copies</td>
+              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; No instant copy feature (no FlexClone). Every experiment needs a full data copy. 10 researchers × 500GB = 5TB charged.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Data Compression</td>
+              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; No data compression or deduplication. Persistent_2 can release files back to S3, but tiering is not automatic. Effective cost is higher than FSx ONTAP with FabricPool enabled.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Team Familiarity</td>
+              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; Completely different tools from NetApp. Our storage team would need to learn Lustre from scratch.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Protocol Support</td>
+              <td style="padding:0.3rem 0; color:var(--yellow-400);">~ Lustre protocol only. No S3-compatible access for SageMaker jobs, no Windows file sharing (SMB), no direct database access.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Cost</td>
+              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; $0.145–$0.29/GB/month. No compression to reduce the bill. No tiering to cheaper storage. Higher effective cost than FSx ONTAP.</td></tr>
+        </table>
+      </div>
+
+      <!-- FSx ONTAP -->
+      <div class="card card--green">
+        <div class="card-label">Our Recommendation</div>
+        <div class="card-title" style="font-size:1rem;">FSx for NetApp ONTAP</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.75rem;">Multiple protocols from one system: file sharing + object storage + built-in NetApp sync</div>
+        <table style="width:100%; font-size:0.74rem; border-collapse:collapse;">
+          <tr><td style="padding:0.3rem 0; color:var(--text-muted); width:38%; vertical-align:top;">Speed</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Under 1ms via network file sharing. Fast enough for H100 training; at this speed, the GPU is the bottleneck, not the storage.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Throughput</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; High throughput per filesystem (exact limit depends on deployment tier and configuration). Can scale with multiple volumes. Sufficient for P5 cluster training.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">S3 Integration</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; S3-compatible access on the exact same volume as file sharing. Both access types from one dataset, no copies.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">SageMaker</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; S3-compatible endpoint (S3 Access Point). SageMaker's preferred way to access data. No extra setup needed.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Sync from On-Prem</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Built-in NetApp sync (SnapMirror). Only sends changed data. RPO is configurable via SnapMirror sync frequency. No scripts, no rescans.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Experiment Copies</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Instant copies (FlexClone). Near-zero cost until researchers make changes. Data scientists self-serve.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Data Compression</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Automatic dedup and compression. Savings vary by data type. Inactive data automatically moves to cheap S3 at $0.023/GB.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Team Familiarity</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Same tools as on-prem NetApp. Same team, same commands, same processes. Zero retraining required.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Protocol Support</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; File sharing (NFS + SMB) + object storage (S3) + direct database access (iSCSI), all from one volume.</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Cost</td>
+              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; $0.065/GB list (Single-AZ) → ~$0.040/GB effective after cold-data tiering. Lower total cost than Lustre.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="winner-banner">
+      <strong>When would FSx for Lustre beat FSx ONTAP?</strong>
+      New AWS-only workloads with no on-prem NetApp, where data throughput beyond 12.5 GB/second is genuinely required,
+      and the team has no NetApp experience to build on.
+      For GlobalCorp, with existing NetApp on-prem storage, built-in sync as the migration path, and a storage team that knows NetApp,
+      Lustre's speed advantage is outweighed by the cost of building custom data pipelines, losing instant experiment copies (FlexClone),
+      losing data compression savings, and retraining the entire storage team.
+      <strong>At this scale, the GPU is the bottleneck, not the storage speed. FSx ONTAP is fast enough.</strong>
+    </div>
+  </section>
+
+  <!-- BACKUP G: Success Metrics -->
+  <section class="slide" data-index="12" aria-hidden="true">
+    <div class="slide-label">Backup F: Success Metrics</div>
+    <h1 class="slide-title">KPIs: <span>Business &amp; Technical</span></h1>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:0.85rem;">
+
+      <!-- Business KPIs -->
+      <div>
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--orange-400); margin-bottom:0.5rem; padding-bottom:0.3rem; border-bottom:2px solid var(--orange-500);">Business KPIs: CTO lens</div>
+        <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+          <thead>
+            <tr style="color:var(--text-muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">
+              <th style="padding:0.3rem 0.4rem; text-align:left; font-weight:600; width:38%;">Metric</th>
+              <th style="padding:0.3rem 0.4rem; text-align:left; font-weight:600; width:22%;">Target</th>
+              <th style="padding:0.3rem 0.4rem; text-align:left; font-weight:600;">Why it matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">Time to first training job</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">&le;8 weeks</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">First SageMaker or EC2 P5 run reading from FSx ONTAP. Confirms migration is delivering business value, not just provisioning infrastructure.</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">Storage TCO vs. alternatives</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">Below EFS baseline</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">Monthly AWS Cost Explorer report vs. equivalent EFS or full-S3 scenario. Confirms the tiering and dedup savings are materializing as projected.</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">DS team model iteration velocity</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">Trending up at 30/60/90 days</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">Number of training experiments run per sprint. If FlexClone and low-latency storage are working, data scientists run more iterations without waiting on IT or storage provisioning.</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">On-prem production availability</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">At or above pre-migration SLA</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">Production apps stay on-prem per security policy. This KPI confirms the hybrid replication does not destabilize or degrade the on-prem NetApp AFF environment.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Technical KPIs -->
+      <div>
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--blue-400); margin-bottom:0.5rem; padding-bottom:0.3rem; border-bottom:2px solid var(--blue-500);">Technical KPIs: Storage &amp; ML teams</div>
+        <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+          <thead>
+            <tr style="color:var(--text-muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">
+              <th style="padding:0.3rem 0.4rem; text-align:left; font-weight:600; width:38%;">Metric</th>
+              <th style="padding:0.3rem 0.4rem; text-align:left; font-weight:600; width:22%;">Target</th>
+              <th style="padding:0.3rem 0.4rem; text-align:left; font-weight:600;">Why it matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">GPU utilization during training</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">&gt;80%</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">Low GPU utilization signals the GPU is waiting on data; storage is still the bottleneck. Tracked via AWS CloudWatch on EC2 P5 instances during active training runs.</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">SnapMirror replication lag</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">Within configured RPO</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">SnapMirror lag beyond the configured sync interval means the cloud copy is stale. Monitored via NetApp BlueXP and AWS CloudWatch alerts.</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">Effective storage cost per GB</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">~$0.04&ndash;$0.05/GB/mo</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">Validates that FabricPool tiering and dedup/compression ratios are working as projected. Reviewed monthly from FSx ONTAP storage efficiency reports and AWS Cost Explorer.</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">FlexClone adoption rate</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">&gt;80% of experiments</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">If data scientists are still making full data copies instead of using FlexClone, the storage waste problem the assignment flagged is unsolved. Tracked from FSx ONTAP volume metrics.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div style="background:linear-gradient(135deg,rgba(0,103,197,0.12),rgba(0,103,197,0.04)); border:1px solid var(--blue-500); border-radius:8px; padding:0.55rem 1.25rem; display:flex; align-items:center; gap:1rem;">
+      <div style="font-size:1.2rem;">&#128202;</div>
+      <div style="font-size:0.78rem; line-height:1.5; color:var(--text-primary);">
+        <strong>Review cadence:</strong><br>Business KPIs reviewed monthly with the CTO and DS leadership. Technical KPIs monitored continuously; reviewed weekly with the storage and ML platform teams. GPU utilization and replication lag reviewed weekly during the first 8 weeks of hybrid operations.
+      </div>
+    </div>
+
+  </section>
+
+  <!-- BACKUP H: Stakeholder Map -->
+  <section class="slide" data-index="13" aria-hidden="true">
+    <div class="slide-label">Backup G: Stakeholder Map</div>
+    <h1 class="slide-title">Who Needs to Say <span>Yes</span></h1>
+
+    <table style="width:100%; border-collapse:collapse; font-size:0.78rem; margin-bottom:0.9rem;">
+      <thead>
+        <tr style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">
+          <th style="padding:0.4rem 0.6rem; text-align:left; font-weight:600; width:22%; border-bottom:2px solid var(--border);">Stakeholder</th>
+          <th style="padding:0.4rem 0.6rem; text-align:left; font-weight:600; width:20%; border-bottom:2px solid var(--border);">Role</th>
+          <th style="padding:0.4rem 0.6rem; text-align:left; font-weight:600; width:28%; border-bottom:2px solid var(--border);">Their concern</th>
+          <th style="padding:0.4rem 0.6rem; text-align:left; font-weight:600; border-bottom:2px solid var(--border);">Our answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:0.55rem 0.6rem; vertical-align:top;">
+            <div style="font-weight:700; color:var(--text-primary);">CTO</div>
+          </td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-muted); font-size:0.73rem;">Decision authority, final sign-off</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-secondary);">Cost, strategic risk, time to value. Is this the right vendor? When do we see results?</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--green-400);">No new vendor; NetApp already manages on-prem. Significant cost savings vs EFS (see Backup B). First training job in 8 weeks. Production stays on-prem.</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:0.55rem 0.6rem; vertical-align:top;">
+            <div style="font-weight:700; color:var(--text-primary);">Data Science Lead</div>
+          </td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-muted); font-size:0.73rem;">Primary user of the platform</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-secondary);">GPU idle time, experiment turnaround, tool compatibility. Will PyTorch work? Can I spin up experiments without waiting on IT?</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--green-400);">Low-latency NFS keeps GPUs busy. FlexClone creates a new experiment dataset in seconds at near-zero cost. SageMaker reads the same volume via S3 AP with no pipeline changes.</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:0.55rem 0.6rem; vertical-align:top;">
+            <div style="font-weight:700; color:var(--text-primary);">Storage Admin</div>
+          </td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-muted); font-size:0.73rem;">Day-to-day operator</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-secondary);">Learning curve, on-call risk. Will I be managing a system I don't know at 2am?</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--green-400);">Same ONTAP CLI and BlueXP console already in use on-prem. SnapMirror is already running. No new toolchain to learn.</td>
+        </tr>
+        <tr>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top;">
+            <div style="font-weight:700; color:var(--text-primary);">CFO / Finance</div>
+          </td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-muted); font-size:0.73rem;">Budget approver</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--text-secondary);">Monthly cost, budget predictability. What does this cost per month? Any surprise bills?</td>
+          <td style="padding:0.55rem 0.6rem; vertical-align:top; color:var(--green-400);">OpEx model with predictable monthly storage cost (~$81.5K/month). FabricPool automatically tiers cold data to S3. Full 3-year TCO model in Backup B.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="background:linear-gradient(135deg,rgba(0,103,197,0.12),rgba(0,103,197,0.04)); border:1px solid var(--blue-500); border-radius:8px; padding:0.55rem 1.25rem; display:flex; align-items:center; gap:1rem;">
+      <div style="font-size:1.2rem;">&#128101;</div>
+      <div style="font-size:0.78rem; line-height:1.6; color:var(--text-primary);">
+        <strong>Highest adoption risk:</strong> storage admin team. A short parallel PoC using existing ONTAP tools resolves this before formal sign-off.&nbsp;&nbsp;
+        <strong>Highest value ally:</strong> DS team lead. Their buy-in accelerates CTO approval and reduces perceived risk.
+      </div>
+    </div>
+
+  </section>
+
+</div><!-- /presentation -->
+
+<!-- Navigation -->
+<nav id="nav" role="navigation" aria-label="Slide navigation">
+  <button id="btn-prev" aria-label="Previous slide" disabled>&#8592; Prev</button>
+  <div id="progress-dots" aria-hidden="true"></div>
+  <span id="counter" aria-live="polite" aria-label="Slide 1 of 11">1 / 11</span>
+  <button id="btn-next" aria-label="Next slide">Next &#8594;</button>
+</nav>
+
+<!-- Diagram zoom modal -->
+<div id="diagram-modal">
+  <div class="diagram-modal-box">
+    <button class="diagram-modal-close" id="diagram-modal-close">&#10005; Close</button>
+    <div id="diagram-modal-svg" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var slides = Array.from(document.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+  var btnPrev = document.getElementById('btn-prev');
+  var btnNext = document.getElementById('btn-next');
+  var dotsContainer = document.getElementById('progress-dots');
+  var TOTAL = slides.length;
+  var current = 0;
+  var animating = false;
+
+  // Build dots
+  slides.forEach(function(_, i) {
+    var dot = document.createElement('div');
+    dot.className = 'dot' + (i >= 5 ? ' backup' : '') + (i === 0 ? ' active' : '');
+    dot.title = 'Slide ' + (i + 1);
+    dot.addEventListener('click', function() { goTo(i); });
+    dotsContainer.appendChild(dot);
+  });
+
+  var dots = Array.from(dotsContainer.querySelectorAll('.dot'));
+
+  function updateUI() {
+    counter.textContent = (current + 1) + ' / ' + TOTAL;
+    counter.setAttribute('aria-label', 'Slide ' + (current + 1) + ' of ' + TOTAL);
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === TOTAL - 1;
+    dots.forEach(function(d, i) {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= TOTAL || index === current || animating) return;
+    animating = true;
+
+    var leaving = slides[current];
+    var entering = slides[index];
+    var dir = index > current ? 1 : -1;
+
+    // Hide leaving
+    leaving.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    leaving.style.opacity = '0';
+    leaving.style.transform = 'translateX(' + (dir * -40) + 'px)';
+
+    // Prepare entering (off-screen, invisible)
+    entering.style.transition = 'none';
+    entering.style.opacity = '0';
+    entering.style.transform = 'translateX(' + (dir * 40) + 'px)';
+    entering.classList.add('active');
+    entering.setAttribute('aria-hidden', 'false');
+    entering.scrollTop = 0;
+
+    setTimeout(function() {
+      entering.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      entering.style.opacity = '1';
+      entering.style.transform = 'translateX(0)';
+    }, 30);
+
+    setTimeout(function() {
+      leaving.classList.remove('active');
+      leaving.setAttribute('aria-hidden', 'true');
+      leaving.style.transition = '';
+      leaving.style.opacity = '';
+      leaving.style.transform = '';
+      entering.style.transition = '';
+      entering.style.opacity = '';
+      entering.style.transform = '';
+      current = index;
+      updateUI();
+      animating = false;
+    }, 310);
+  }
+
+  // Expose for backup divider links
+  window.goToSlide = goTo;
+
+  btnPrev.addEventListener('click', function() { goTo(current - 1); });
+  btnNext.addEventListener('click', function() { goTo(current + 1); });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'Escape') { diagModal.classList.remove('open'); return; }
+    if (diagModal.classList.contains('open')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+  });
+
+  // Diagram zoom modal
+  var diagModal    = document.getElementById('diagram-modal');
+  var diagClose    = document.getElementById('diagram-modal-close');
+  var diagSvgWrap  = document.getElementById('diagram-modal-svg');
+  var archDiagram  = document.getElementById('arch-diagram');
+
+  archDiagram.addEventListener('click', function() {
+    var clone = archDiagram.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.removeAttribute('title');
+    clone.style.cssText = 'width:100%;height:100%;max-height:none;cursor:default;display:block;';
+    diagSvgWrap.innerHTML = '';
+    diagSvgWrap.appendChild(clone);
+    diagModal.classList.add('open');
+  });
+
+  diagClose.addEventListener('click', function() { diagModal.classList.remove('open'); });
+  diagModal.addEventListener('click', function(e) {
+    if (e.target === diagModal) diagModal.classList.remove('open');
+  });
+
+  updateUI();
+})();
+</script>
+</body>
+</html>

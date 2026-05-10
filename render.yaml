@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: netapp-fsx-presentation
+    env: static
+    staticPublishPath: .
+    buildCommand: ""
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-store
