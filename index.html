@@ -1038,7 +1038,7 @@ html, body {
             <div><strong>&#9656; Fast storage (hot tier):</strong><br>FSx ONTAP automatically compresses the 2PB dataset to roughly 600–800TB of actual stored data. Of that, the active portion (~40%) stays on NVMe SSD for fast access; the rest automatically tiers to cheap S3 storage.</div>
             <div><strong>&#9656; Cheap storage (cold tier):</strong><br>Amazon S3. Inactive data automatically moves here. No manual work. Applications still read it transparently when needed.</div>
             <div><strong>&#9656; Network link:</strong><br>AWS Direct Connect, a dedicated private connection between our data center and AWS. No public internet. AWS ingress is free; only changed blocks sync via SnapMirror.</div>
-            <div><strong>&#9656; Compute:</strong><br>EC2 P5 GPU servers (H100 chips) for direct model training + Amazon SageMaker for managed training jobs, both reading from the same FSx ONTAP storage simultaneously. <em>(H100 was requested by the DS team. Backup D covers lower-cost GPU alternatives worth evaluating.)</em></div>
+            <div><strong>&#9656; Compute:</strong><br>EC2 P5 GPU servers (H100 chips) for direct model training + Amazon SageMaker for managed training jobs, both reading from the same FSx ONTAP storage simultaneously. <em>(H100 was requested by the DS team. Backup E covers lower-cost GPU alternatives worth evaluating.)</em></div>
           </div><br>
 
           <strong style="color:var(--orange-400);">What this one system covers:</strong> AI/ML training, databases, Windows &amp; Linux file shares, home directories, all from the same storage, with the same tools our team already uses today.
@@ -1251,11 +1251,11 @@ html, body {
         </div>
         <div style="flex:1;">
           <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#128193; File Shares</div>
-          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Dev/test file shares for the data science team run on FSx ONTAP alongside AI/ML storage. Production file shares remain on-prem. Same ONTAP tooling manages both environments.</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Linux teams access shared folders via NFS; Windows teams via SMB, both served from the same FSx ONTAP volume. Dev/test shares run in AWS; production file shares remain on-prem per security policy.</div>
         </div>
         <div style="flex:1;">
           <div style="font-size:0.76rem; font-weight:600; color:var(--text-primary);">&#128100; Home Directories</div>
-          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Each data scientist gets a personal home directory on FSx ONTAP. FlexClone lets them spin up instant zero-copy dataset copies for experiments, with no storage overhead until data actually changes.</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">Employee home directories for cloud-based workloads served via NFS (Linux) or SMB (Windows) from FSx ONTAP. Data scientists additionally benefit from FlexClone: instant zero-copy dataset copies for experiments with no storage overhead until data actually changes.</div>
         </div>
       </div>
     </div>
@@ -1474,10 +1474,11 @@ html, body {
       <a onclick="goToSlide(6)"><span class="divider-tag">A</span> Data Lifecycle &amp; Efficiency: Cost Management at 2PB Scale</a>
       <a onclick="goToSlide(7)"><span class="divider-tag">B</span> Cost Model &amp; TCO Analysis</a>
       <a onclick="goToSlide(8)"><span class="divider-tag">C</span> Migration Timeline &amp; Phases</a>
-      <a onclick="goToSlide(9)"><span class="divider-tag" style="color:var(--orange-400); border-color:var(--orange-500);">D</span> Compute Optimization: Beyond EC2 P5</a>
-      <a onclick="goToSlide(10)"><span class="divider-tag" style="color:var(--orange-400); border-color:var(--orange-500);">E</span> FSx for Lustre: Why Not the Purpose-Built ML Option?</a>
-      <a onclick="goToSlide(11)"><span class="divider-tag" style="color:var(--green-400); border-color:var(--green-400);">F</span> Success Metrics: How We Know It Worked</a>
-      <a onclick="goToSlide(12)"><span class="divider-tag" style="color:var(--blue-400); border-color:var(--blue-400);">G</span> Stakeholder Map: Who Needs to Say Yes</a>
+      <a onclick="goToSlide(9)"><span class="divider-tag" style="color:var(--green-400); border-color:var(--green-400);">D</span> Security &amp; Operations</a>
+      <a onclick="goToSlide(10)"><span class="divider-tag" style="color:var(--orange-400); border-color:var(--orange-500);">E</span> Compute Optimization: Beyond EC2 P5</a>
+      <a onclick="goToSlide(11)"><span class="divider-tag" style="color:var(--orange-400); border-color:var(--orange-500);">F</span> FSx for Lustre: Why Not the Purpose-Built ML Option?</a>
+      <a onclick="goToSlide(12)"><span class="divider-tag" style="color:var(--green-400); border-color:var(--green-400);">G</span> Success Metrics: How We Know It Worked</a>
+      <a onclick="goToSlide(13)"><span class="divider-tag" style="color:var(--blue-400); border-color:var(--blue-400);">H</span> Stakeholder Map: Who Needs to Say Yes</a>
     </div>
   </section>
 
@@ -1779,11 +1780,69 @@ html, body {
     </div>
   </section>
 
-  <!-- BACKUP D: Why Not EBS/EFS/S3 — REMOVED; content folded into Slide 3 winner banner -->
-
-  <!-- BACKUP E: Compute Optimization (was E, now D) -->
+  <!-- BACKUP D: Security & Operations -->
   <section class="slide" data-index="9" aria-hidden="true">
-    <div class="slide-label">Backup D: Compute Optimization</div>
+    <div class="slide-label">Backup D: Security &amp; Operations</div>
+    <h1 class="slide-title">Security <span>&amp; Operations</span></h1>
+    <p class="slide-subtitle">How data is protected, who controls access, and how the team manages both environments without adding new tools or vendors.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:0.75rem;">
+
+      <!-- Security column -->
+      <div style="display:flex; flex-direction:column; gap:0.6rem;">
+        <div class="section-head">Security</div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#128274; Data in Transit</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">All data moving between on-prem and AWS travels over Direct Connect, a dedicated private link. No public internet exposure. TLS encryption applied at the SnapMirror layer.</div>
+        </div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#128272; Data at Rest</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">FSx ONTAP volumes are encrypted at rest using AES-256. Encryption is managed by AWS KMS with customer-managed keys available for full key control.</div>
+        </div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#128100; Access Control</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">IAM policies control which SageMaker roles and EC2 instances can reach S3 Access Points. NFS export policies restrict which EC2 instances can mount volumes. Both enforced at the storage layer, independent of the application.</div>
+        </div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#128203; Audit &amp; Compliance</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">ONTAP logs all file access events. AWS CloudTrail captures every S3 Access Point call. Full audit trail available for compliance reviews without any additional tooling.</div>
+        </div>
+      </div>
+
+      <!-- Operations column -->
+      <div style="display:flex; flex-direction:column; gap:0.6rem;">
+        <div class="section-head">Operations</div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#127757; Single Pane of Glass</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">NetApp BlueXP manages on-prem AFF and FSx ONTAP from one console. The storage team operates both environments with the same tools, the same CLI, and the same monitoring they use today. No retraining, no new vendor onboarding.</div>
+        </div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#128737; Production Isolation</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">Production data never leaves on-prem NetApp AFF. This is enforced at the storage level, not just policy. An AWS outage has zero impact on production operations. On-prem is always the source of truth and the fallback.</div>
+        </div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#9203; RPO &amp; Recovery</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">Recovery Point Objective is configurable via SnapMirror sync frequency. ONTAP Snapshots provide instant rollback for datasets and experiment copies. Any prior state can be restored in seconds with no performance impact during normal operations.</div>
+        </div>
+
+        <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.9rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary); margin-bottom:0.2rem;">&#128200; Blast Radius</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">Single-AZ FSx ONTAP deployment means a cloud-side failure affects only dev, test, analytics, and training workloads. Production is unaffected. The architecture is designed so the worst-case AWS failure is a training job interruption, not a business outage.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKUP E: Compute Optimization (was D) -->
+  <section class="slide" data-index="10" aria-hidden="true">
+    <div class="slide-label">Backup E: Compute Optimization</div>
     <h1 class="slide-title">Beyond <span>EC2 P5</span></h1>
     <p class="slide-subtitle">The Data Science team asked for P5 + SageMaker. Here's how we optimize that ask, and why FSx ONTAP stays the same regardless of which path we choose.</p>
 
@@ -1873,7 +1932,7 @@ html, body {
 
   <!-- BACKUP F: FSx for Lustre -->
   <section class="slide" data-index="11" aria-hidden="true">
-    <div class="slide-label">Backup E: Honest Alternatives</div>
+    <div class="slide-label">Backup F: Honest Alternatives</div>
     <h1 class="slide-title">Why Not <span>FSx for Lustre</span>?</h1>
     <p class="slide-subtitle">AWS's storage system purpose-built for AI/ML training speed. We evaluated it seriously. Here is why FSx ONTAP still wins for GlobalCorp specifically.</p>
 
@@ -1951,7 +2010,7 @@ html, body {
 
   <!-- BACKUP G: Success Metrics -->
   <section class="slide" data-index="12" aria-hidden="true">
-    <div class="slide-label">Backup F: Success Metrics</div>
+    <div class="slide-label">Backup G: Success Metrics</div>
     <h1 class="slide-title">KPIs: <span>Business &amp; Technical</span></h1>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:0.85rem;">
@@ -2041,7 +2100,7 @@ html, body {
 
   <!-- BACKUP H: Stakeholder Map -->
   <section class="slide" data-index="13" aria-hidden="true">
-    <div class="slide-label">Backup G: Stakeholder Map</div>
+    <div class="slide-label">Backup H: Stakeholder Map</div>
     <h1 class="slide-title">Who Needs to Say <span>Yes</span></h1>
 
     <table style="width:100%; border-collapse:collapse; font-size:0.78rem; margin-bottom:0.9rem;">
