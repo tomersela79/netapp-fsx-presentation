@@ -995,6 +995,12 @@ html, body {
           </div>
         </div>
 
+        <!-- Single reason -->
+        <div style="background:linear-gradient(135deg,rgba(0,103,197,0.18),rgba(0,103,197,0.06)); border:1px solid var(--blue-500); border-radius:8px; padding:0.65rem 1rem;">
+          <div style="font-size:0.6rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--blue-400); margin-bottom:0.3rem;">The Single Most Important Reason</div>
+          <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); line-height:1.4;">GlobalCorp already runs NetApp on-prem. FSx ONTAP is the same software in AWS.<br>The 2PB syncs automatically, the team needs zero retraining, and production is never at risk.</div>
+        </div>
+
         <!-- Why FSx ONTAP — 3 Pillars compact box -->
         <div style="background:var(--navy-700); border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem; flex:1;">
           <div style="font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-secondary); margin-bottom:0.65rem;">Why FSx ONTAP Specifically</div>
@@ -1108,9 +1114,9 @@ html, body {
     <table class="comparison-table" style="table-layout:fixed;">
       <colgroup>
         <col style="width:16%">
-        <col style="width:14%">
+        <col style="width:12%">
+        <col style="width:32%">
         <col style="width:26%">
-        <col style="width:30%">
         <col style="width:14%">
       </colgroup>
       <thead>
@@ -1136,8 +1142,7 @@ html, body {
           <td class="cell-fail" style="font-size:0.76rem;">
             <ul style="margin:0; padding-left:1rem; line-height:1.7;">
               <li>Attaches to one server at a time by design</li>
-              <li>Shared mode capped at 16 instances, same AZ only</li>
-              <li>Each GPU instance would need its own full copy of the 2PB dataset</li>
+              <li>Each EC2 instance would need its own full copy of the 2PB dataset</li>
             </ul>
           </td>
           <td class="cell-fail" style="font-size:0.8rem; font-weight:700; text-align:center;">Fails: can't share data across servers</td>
@@ -1154,9 +1159,8 @@ html, body {
           </td>
           <td class="cell-fail" style="font-size:0.76rem;">
             <ul style="margin:0; padding-left:1rem; line-height:1.7;">
-              <li>5–20ms per file fetch; GPU sits idle during each training step</li>
-              <li>128-image mini-batch = 128 separate fetches = up to 2.5s stall</li>
-              <li>Mountpoint for S3: no rename, no file locking, no random writes; breaks PyTorch and TensorFlow</li>
+              <li>5–20ms per file fetch; a 128-image mini-batch requires 128 separate fetches, stalling the GPU for up to 2.5 seconds per training step</li>
+              <li>Mountpoint for S3 lacks the file operations ML frameworks depend on, making it unreliable for training workloads</li>
             </ul>
             <div style="margin-top:0.4rem; font-size:0.72rem; color:var(--green-400);">Used as FabricPool cold tier; these limits do not apply in that role.</div>
           </td>
@@ -1239,33 +1243,98 @@ html, body {
       <tbody>
         <tr>
           <td class="criteria-col">Data Movement to AWS</td>
-          <td class="cell-fail" style="font-size:0.76rem;">No native integration with on-prem NetApp AFF.<br>Requires AWS DataSync or custom tooling to move data to S3, adding setup cost and operational overhead.</td>
-          <td class="cell-win" style="font-size:0.76rem;">SnapMirror replicates incrementally from on-prem AFF, transferring only changed blocks.<br>Built-in NetApp feature, no additional tooling needed.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>No native integration with on-prem NetApp AFF</li>
+              <li>Requires AWS DataSync or custom tooling to move data to S3</li>
+              <li>Adds setup cost and operational overhead</li>
+            </ul>
+          </td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>SnapMirror replicates incrementally from on-prem AFF</li>
+              <li>Only changed blocks are transferred, not the full dataset</li>
+              <li>Built-in NetApp feature, no additional tooling needed</li>
+            </ul>
+          </td>
         </tr>
         <tr>
           <td class="criteria-col">Protocol Support</td>
-          <td class="cell-fail" style="font-size:0.76rem;">S3 only.<br>Traditional application file data must be converted or restructured into S3-compatible object format.<br>The original file structure is not preserved as-is.</td>
-          <td class="cell-win" style="font-size:0.76rem;">Traditional application file data is accessible via S3 Access Points on the same volume.<br>No format conversion, no duplication, no second system required.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>S3 only</li>
+              <li>Traditional file data must be converted into S3-compatible object format</li>
+              <li>Original file structure is not preserved as-is</li>
+            </ul>
+          </td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Traditional file data accessible via S3 Access Points on the same volume</li>
+              <li>No format conversion, no duplication, no second system required</li>
+            </ul>
+          </td>
         </tr>
         <tr>
           <td class="criteria-col">SageMaker Access</td>
-          <td class="cell-win" style="font-size:0.76rem;">Works natively.<br>SageMaker is designed to read training data directly from S3.<br>Genuine strength.</td>
-          <td class="cell-win" style="font-size:0.76rem;">FSx ONTAP exposes an S3-compatible endpoint on the same volume.<br>SageMaker reads natively, zero extra copies, zero extra storage cost.</td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Works natively</li>
+              <li>SageMaker is designed to read training data directly from S3</li>
+            </ul>
+          </td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>FSx ONTAP exposes an S3-compatible endpoint on the same volume</li>
+              <li>SageMaker reads natively with zero extra copies and zero extra storage cost</li>
+            </ul>
+          </td>
         </tr>
         <tr>
           <td class="criteria-col">Keeping Data in Sync</td>
-          <td class="cell-fail" style="font-size:0.76rem;">No native sync with NetApp AFF.<br>Requires AWS DataSync or custom scripts, adding operational overhead with no guarantee of consistency with the on-prem master copy.</td>
-          <td class="cell-win" style="font-size:0.76rem;">SnapMirror sends only changed blocks since last sync, not a full dataset rescan.<br>Automatic, consistent, no scripts needed.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>No native sync with NetApp AFF</li>
+              <li>Requires AWS DataSync or custom scripts</li>
+              <li>No guarantee of consistency with the on-prem master copy</li>
+            </ul>
+          </td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>SnapMirror sends only changed blocks since last sync</li>
+              <li>Automatic, consistent, no scripts needed</li>
+            </ul>
+          </td>
         </tr>
         <tr>
           <td class="criteria-col">Experiment Copies</td>
-          <td class="cell-fail" style="font-size:0.76rem;">No zero-copy mechanism in S3.<br>If data scientists need isolated subsets for different training runs, each requires a full copy.<br>Storage consumption grows accordingly.</td>
-          <td class="cell-win" style="font-size:0.76rem;">FlexClone creates instant zero-copy clones of the dataset.<br>Storage is only consumed when data actually changes, keeping experiment overhead low.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>No zero-copy mechanism in S3</li>
+              <li>Each experiment requires a full copy of the dataset</li>
+              <li>Storage consumption grows with every experiment</li>
+            </ul>
+          </td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>FlexClone creates instant zero-copy clones of the dataset</li>
+              <li>Storage consumed only when data actually changes</li>
+            </ul>
+          </td>
         </tr>
         <tr>
           <td class="criteria-col">Team Operations</td>
-          <td class="cell-fail" style="font-size:0.76rem;">Completely separate from on-prem storage.<br>Team must learn new tools and manage two independent systems simultaneously.</td>
-          <td class="cell-win" style="font-size:0.76rem;">Same ONTAP tooling the team uses on-prem today.<br>NetApp BlueXP provides one unified management console across on-prem and cloud.</td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Completely separate from on-prem storage</li>
+              <li>Team must learn new tools and manage two independent systems</li>
+            </ul>
+          </td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Same ONTAP tooling the team uses on-prem today</li>
+              <li>NetApp BlueXP provides one unified management console across on-prem and cloud</li>
+            </ul>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -1891,34 +1960,9 @@ html, body {
   <section class="slide" data-index="10" aria-hidden="true">
     <div class="slide-label">Backup E: Compute Optimization</div>
     <h1 class="slide-title">Beyond <span>EC2 P5</span></h1>
-    <p class="slide-subtitle">The Data Science team asked for P5 + SageMaker. Here's how we optimize that ask, and why FSx ONTAP stays the same regardless of which path we choose.</p>
+    <p class="slide-subtitle">The Data Science team requested EC2 P5. Here is the full compute landscape for context. FSx ONTAP over NFS is compatible with all options; the storage decision is not coupled to the compute choice.</p>
 
     <!-- Profile-first diagnostic -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
-      <div class="burning-platform">
-        <div class="bp-label">&#9888; The Question Nobody Asked the DS Team</div>
-        <div class="bp-title">Is the most expensive GPU actually solving the right problem?</div>
-        <div class="bp-body">
-          The requirement is <strong>"fast access to <em>specific subsets</em> of 2PB."</strong>
-          That is a <strong>data access problem</strong>, not a computing power problem. H100 GPUs
-          sit idle when storage can't feed them fast enough. Buying more GPU power when the real bottleneck is data access
-          makes training <em>slower per dollar spent</em>.<br><br>
-          "Specific subsets" may indicate fine-tuning an existing model rather than training from scratch. Fine-tuning workloads often do not saturate an H100.
-          An older GPU type (A100/P4de) or AWS's own AI chip (Trainium 2) may deliver sufficient results at meaningfully lower cost.
-        </div>
-      </div>
-      <div style="display:grid; grid-template-rows:1fr 1fr; gap:0.6rem;">
-        <div class="card card--red">
-          <div class="card-label">If storage is the bottleneck (GPU is waiting for data)</div>
-          <div class="card-body">Fix the data pipeline first. Ensuring fast NFS access and correctly sized hot-tier storage delivers more training throughput per dollar than upgrading the GPU. Choose compute <em>after</em> storage is no longer the bottleneck.</div>
-        </div>
-        <div class="card card--green">
-          <div class="card-label">If the GPU is the bottleneck (running at full capacity)</div>
-          <div class="card-body">H100 (P5) is justified, but test whether AWS Trainium 2 matches the performance at 30–40% lower cost on your specific model before committing to a full P5 fleet.</div>
-        </div>
-      </div>
-    </div>
-
     <div class="section-head">Compute Options Comparison: All Compatible with FSx ONTAP over NFS</div>
     <table class="comparison-table" style="margin-top:0.5rem;">
       <thead>
@@ -1941,7 +1985,7 @@ html, body {
           <td class="cell-win">&#10003; NFS v4.1</td>
         </tr>
         <tr>
-          <td class="criteria-col" style="white-space:normal;">EC2 Trn2<br><span style="font-weight:400; color:var(--orange-400); font-size:0.71rem;">AWS Trainium 2 &#9733; Recommended POC</span></td>
+          <td class="criteria-col" style="white-space:normal;">EC2 Trn2<br><span style="font-weight:400; color:var(--text-muted); font-size:0.71rem;">AWS Trainium 2</span></td>
           <td class="cell-win">Lower cost per hour than P5; actual savings depend on workload and training time</td>
           <td style="color:var(--text-secondary);">Large transformers, LLMs, diffusion models. New workloads where pipeline can be optimised.</td>
           <td style="color:var(--text-secondary);">Purpose-built for training. AWS claims significant price-performance advantage on transformer workloads; validate on your specific model before committing.</td>
@@ -2074,8 +2118,8 @@ html, body {
             </tr>
           </thead>
           <tbody>
-            <tr style="border-top:1px solid var(--border);">
-              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">Time to first training job</td>
+            <tr style="border-top:1px solid var(--border); background:rgba(255,107,0,0.08);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">Time to first training job <span style="font-size:0.6rem; font-weight:700; color:var(--orange-400); background:rgba(255,107,0,0.15); border:1px solid var(--orange-500); border-radius:3px; padding:0.1rem 0.35rem; text-transform:uppercase; letter-spacing:0.05em; margin-left:0.3rem;">Lead</span></td>
               <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">&le;8 weeks</td>
               <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">First SageMaker or EC2 P5 run reading from FSx ONTAP. Confirms migration is delivering business value, not just provisioning infrastructure.</td>
             </tr>
@@ -2110,15 +2154,15 @@ html, body {
             </tr>
           </thead>
           <tbody>
+            <tr style="border-top:1px solid var(--border); background:rgba(0,103,197,0.08);">
+              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">SnapMirror replication lag <span style="font-size:0.6rem; font-weight:700; color:var(--blue-400); background:rgba(0,103,197,0.15); border:1px solid var(--blue-500); border-radius:3px; padding:0.1rem 0.35rem; text-transform:uppercase; letter-spacing:0.05em; margin-left:0.3rem;">Lead</span></td>
+              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">Within configured RPO</td>
+              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">SnapMirror lag beyond the configured sync interval means the cloud copy is stale. Monitored via NetApp BlueXP and AWS CloudWatch alerts.</td>
+            </tr>
             <tr style="border-top:1px solid var(--border);">
               <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">GPU utilization during training</td>
               <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">&gt;80%</td>
               <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">Low GPU utilization signals the GPU is waiting on data; storage is still the bottleneck. Tracked via AWS CloudWatch on EC2 P5 instances during active training runs.</td>
-            </tr>
-            <tr style="border-top:1px solid var(--border);">
-              <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">SnapMirror replication lag</td>
-              <td style="padding:0.4rem 0.4rem; color:var(--green-400); font-weight:700; vertical-align:top;">Within configured RPO</td>
-              <td style="padding:0.4rem 0.4rem; color:var(--text-secondary); vertical-align:top;">SnapMirror lag beyond the configured sync interval means the cloud copy is stale. Monitored via NetApp BlueXP and AWS CloudWatch alerts.</td>
             </tr>
             <tr style="border-top:1px solid var(--border);">
               <td style="padding:0.4rem 0.4rem; color:var(--text-primary); font-weight:600; vertical-align:top;">Effective storage cost per GB</td>
