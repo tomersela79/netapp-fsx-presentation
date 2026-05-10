@@ -1701,10 +1701,10 @@ html, body {
         <div class="phase-time">Weeks 3–6</div>
         <div class="phase-title">Data Migration</div>
         <div class="phase-body">
-          &bull; Initial SnapMirror seed: 2PB at 10Gbps ≈ 18 days (wks 3–5)<br>
+          &bull; Replicate 50–100GB subset and run pilot validation (wk 3)<br>
+          &bull; Full SnapMirror seed: 2PB at 10Gbps ≈ 18 days, starts after pilot passes (wks 4–6)<br>
           &bull; Verify data integrity on arrival (automated checksums)<br>
-          &bull; Configure FabricPool tiering to S3 and S3 Access Points for SageMaker<br>
-          &bull; Validate with a sample training job before full go-live
+          &bull; Configure FabricPool tiering to S3 and S3 Access Points for SageMaker
         </div>
         <div class="phase-risk">Risk: Network bandwidth. Offset with off-peak scheduling</div>
       </div>
@@ -1730,12 +1730,52 @@ html, body {
       </div>
       <div class="metric">
         <div class="metric-value">Wk 6</div>
-        <div class="metric-label">Full 2PB replicated<br>and verified in AWS</div>
+        <div class="metric-label">Full 2PB replicated,<br>pilot validated</div>
       </div>
       <div class="metric">
         <div class="metric-value">Wk 7+</div>
         <div class="metric-label">Training live,<br>ongoing hybrid operations</div>
       </div>
+    </div>
+
+    <!-- Week 6 Pilot -->
+    <div style="background:var(--navy-700); border:1px solid var(--blue-500); border-radius:8px; padding:0.6rem 1rem; margin-top:0.65rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+        <span style="font-size:0.6rem; font-weight:700; color:var(--blue-400); background:rgba(0,103,197,0.15); border:1px solid var(--blue-500); border-radius:3px; padding:0.1rem 0.4rem; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Wk 3 Pilot</span>
+        <span style="font-size:0.82rem; font-weight:700; color:var(--text-primary);">Validate Before Committing to Full 2PB Transfer</span>
+        <span style="font-size:0.72rem; color:var(--text-muted); margin-left:0.3rem;">50–100GB representative subset replicated first · full seed only proceeds if pilot passes</span>
+      </div>
+      <table style="width:auto; border-collapse:collapse; font-size:0.72rem;">
+        <thead>
+          <tr>
+            <th style="width:3%; padding:0.25rem 0.5rem; text-align:center; color:var(--text-muted); font-weight:600; border-bottom:1px solid var(--border);">#</th>
+            <th style="width:48%; padding:0.25rem 0.75rem; text-align:left; color:var(--blue-400); font-weight:600; text-transform:uppercase; font-size:0.67rem; letter-spacing:0.05em; border-bottom:1px solid var(--border);">What we run</th>
+            <th style="width:49%; padding:0.25rem 0.75rem; text-align:left; color:var(--green-400); font-weight:600; text-transform:uppercase; font-size:0.67rem; letter-spacing:0.05em; border-bottom:1px solid var(--border);">What we validate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:0.3rem 0.5rem; text-align:center; color:var(--text-muted); border-bottom:1px solid var(--border);">1</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border);">Mount FSx ONTAP volume on EC2 P5 via NFS</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border);">NFS mount is reachable and stable from the compute instance</td>
+          </tr>
+          <tr>
+            <td style="padding:0.3rem 0.5rem; text-align:center; color:var(--text-muted); border-bottom:1px solid var(--border);">2</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border);">Run a real PyTorch / TensorFlow training job against the subset</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border);">GPU utilization stays above 80% (storage is not the bottleneck)</td>
+          </tr>
+          <tr>
+            <td style="padding:0.3rem 0.5rem; text-align:center; color:var(--text-muted); border-bottom:1px solid var(--border);">3</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border);">Point a SageMaker training job at the same data via S3 Access Point</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border);">S3 Access Point reachable; data integrity confirmed, no SnapMirror corruption</td>
+          </tr>
+          <tr>
+            <td style="padding:0.3rem 0.5rem; text-align:center; color:var(--text-muted);">4</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary);">Confirm model output files write back to the FSx volume</td>
+            <td style="padding:0.3rem 0.75rem; color:var(--text-secondary);">IAM permissions, NFS export policies, and routing are all correct</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
