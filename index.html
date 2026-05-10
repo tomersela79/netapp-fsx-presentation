@@ -985,13 +985,13 @@ html, body {
         <!-- Burning Platform (half height) -->
         <div class="burning-platform" style="flex:0 0 auto;">
           <div class="bp-label">&#9888; Why We Cannot Afford to Wait</div>
-          <div class="bp-title">The AI initiative is blocked right now.</div>
+          <div class="bp-title">2PB of training data sits on-prem with no path to AWS compute.</div>
           <div class="bp-body">
-            Our Data Science team has a mandate to train AI models in AWS, but their 2PB of training data has no connection to the cloud.<br>
-            Without this solution: manually copying to S3 takes <strong>~18 days</strong>, costs <strong>$46K/month</strong> in storage fees,
-            and the AI tools break on arrival because S3 doesn't support the standard file operations PyTorch and TensorFlow need.<br><br>
-            The only alternative, buying on-prem GPU servers, costs <strong>$5–8M upfront</strong> and takes 12–18 months.<br>
-            Doing nothing is the most expensive option on the table.
+            <ul style="margin:0; padding-left:1.1rem; line-height:1.8;">
+              <li>2PB of training data sits on-prem with no cloud connection; the AI training mandate cannot move forward</li>
+              <li>Without a hybrid solution, the only alternative is on-prem GPU servers: <strong>$5–8M upfront</strong> and 12–18 months lead time</li>
+              <li>Cloud is the only viable path; the question is which storage solution makes it work</li>
+            </ul>
           </div>
         </div>
 
