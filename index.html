@@ -2029,75 +2029,98 @@ html, body {
     <h1 class="slide-title">Why Not <span>FSx for Lustre</span>?</h1>
     <p class="slide-subtitle">AWS's storage system purpose-built for AI/ML training speed. We evaluated it seriously. Here is why FSx ONTAP still wins for GlobalCorp specifically.</p>
 
-    <div class="two-col-equal" style="margin-bottom:0.85rem;">
+    <table class="comparison-table" style="margin-bottom:0.85rem; table-layout:fixed;">
+      <colgroup>
+        <col style="width:18%">
+        <col style="width:41%">
+        <col style="width:41%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th></th>
+          <th style="color:var(--orange-400);">FSx for Lustre <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">The Alternative</span></th>
+          <th style="color:var(--green-400);">&#10003; FSx for NetApp ONTAP <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">Our Recommendation</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="criteria-col">Speed</td>
+          <td class="cell-win" style="font-size:0.74rem;">Under 1ms. Built specifically for the random read patterns of AI training. Very fast.</td>
+          <td class="cell-win" style="font-size:0.74rem;">Under 1ms via NFS. Fast enough for H100 training; at this speed, the GPU is the bottleneck, not the storage.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Throughput</td>
+          <td class="cell-win" style="font-size:0.74rem;">Hundreds of GB/second. Scales by adding more storage servers. Best raw speed for ML.</td>
+          <td class="cell-win" style="font-size:0.74rem;">High throughput per filesystem, scales with multiple volumes. Sufficient for P5 cluster training.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">S3 Integration</td>
+          <td class="cell-win" style="font-size:0.74rem;">Can use S3 as its underlying storage. Loads data from S3 automatically on first access.</td>
+          <td class="cell-win" style="font-size:0.74rem;">S3-compatible access on the exact same volume as file sharing. Both access types from one dataset, no copies.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">SageMaker</td>
+          <td class="cell-win" style="font-size:0.74rem;">Works with SageMaker via Lustre protocol (SageMaker mounts the filesystem directly using the Lustre client).</td>
+          <td class="cell-win" style="font-size:0.74rem;">S3 Access Point endpoint. SageMaker's preferred way to access data. No extra setup needed.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Sync from On-Prem</td>
+          <td class="cell-fail" style="font-size:0.74rem;">&#10007; No built-in NetApp sync. Requires AWS DataSync or custom scripts. Adds operational overhead vs. native SnapMirror.</td>
+          <td class="cell-win" style="font-size:0.74rem;">Built-in SnapMirror. Only sends changed data. RPO configurable. No scripts, no rescans.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Experiment Copies</td>
+          <td class="cell-fail" style="font-size:0.74rem;">&#10007; No FlexClone. Every experiment needs a full data copy. 10 researchers x 500GB = 5TB charged.</td>
+          <td class="cell-win" style="font-size:0.74rem;">Instant zero-copy clones (FlexClone). Near-zero cost until researchers make changes.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Data Compression</td>
+          <td class="cell-fail" style="font-size:0.74rem;">&#10007; No dedup or compression. Tiering not automatic. Higher effective cost than FSx ONTAP with FabricPool.</td>
+          <td class="cell-win" style="font-size:0.74rem;">Automatic dedup and compression. Inactive data tiers automatically to S3 at $0.023/GB.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Team Familiarity</td>
+          <td class="cell-fail" style="font-size:0.74rem;">&#10007; Completely different tools from NetApp. Storage team would need to learn Lustre from scratch.</td>
+          <td class="cell-win" style="font-size:0.74rem;">Same tools as on-prem NetApp. Same team, same commands, same processes. Zero retraining.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Protocol Support</td>
+          <td class="cell-warn" style="font-size:0.74rem;">~ Lustre protocol only. No SMB for Windows, no iSCSI for databases.</td>
+          <td class="cell-win" style="font-size:0.74rem;">NFS + SMB + S3 + iSCSI, all from one volume.</td>
+        </tr>
+        <tr>
+          <td class="criteria-col">Cost</td>
+          <td class="cell-fail" style="font-size:0.74rem;">&#10007; $0.145–$0.29/GB/month. No compression, no automatic tiering. Higher effective cost.</td>
+          <td class="cell-win" style="font-size:0.74rem;">$0.065/GB list (Single-AZ), ~$0.040/GB effective after tiering and dedup savings.</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <!-- FSx for Lustre -->
-      <div class="card card--orange">
-        <div class="card-label">The Alternative</div>
-        <div class="card-title" style="font-size:1rem;">Amazon FSx for Lustre</div>
-        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.75rem;">AWS's purpose-built high-speed storage for AI/ML and scientific computing</div>
-        <table style="width:100%; font-size:0.74rem; border-collapse:collapse;">
-          <tr><td style="padding:0.3rem 0; color:var(--text-muted); width:38%; vertical-align:top;">Speed</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Under 1ms. Built specifically for the random read patterns of AI training. Very fast.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Throughput</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Hundreds of GB/second. Scales by adding more storage servers. Best raw speed for ML.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">S3 Integration</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Can use S3 as its underlying storage. Loads data from S3 automatically on first access.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">SageMaker</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Works with SageMaker via Lustre protocol (SageMaker mounts the filesystem directly using the Lustre client).</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Sync from On-Prem</td>
-              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; No built-in NetApp sync. Requires AWS DataSync or custom scripts to transfer from on-prem AFF. DataSync is incremental (only changed files), but adds operational overhead vs. native SnapMirror.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Experiment Copies</td>
-              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; No instant copy feature (no FlexClone). Every experiment needs a full data copy. 10 researchers × 500GB = 5TB charged.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Data Compression</td>
-              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; No data compression or deduplication. Persistent_2 can release files back to S3, but tiering is not automatic. Effective cost is higher than FSx ONTAP with FabricPool enabled.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Team Familiarity</td>
-              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; Completely different tools from NetApp. Our storage team would need to learn Lustre from scratch.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Protocol Support</td>
-              <td style="padding:0.3rem 0; color:var(--yellow-400);">~ Lustre protocol only. No S3-compatible access for SageMaker jobs, no Windows file sharing (SMB), no direct database access.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Cost</td>
-              <td style="padding:0.3rem 0; color:var(--red-400);">&#10007; $0.145–$0.29/GB/month. No compression to reduce the bill. No tiering to cheaper storage. Higher effective cost than FSx ONTAP.</td></tr>
-        </table>
+    <div class="two-col-equal" style="margin-top:0.85rem; align-items:stretch;">
+
+      <!-- When Lustre wins -->
+      <div class="card card--blue" style="height:100%;">
+        <div class="card-label">When would FSx for Lustre beat FSx ONTAP?</div>
+        <ul style="margin:0.5rem 0 0 0; padding-left:1.1rem; font-size:0.76rem; color:var(--text-secondary); line-height:1.8;">
+          <li>New AWS-only workloads with no on-prem NetApp environment</li>
+          <li>Data throughput beyond what FSx ONTAP can deliver is genuinely required</li>
+          <li>The team has no NetApp experience and no existing tooling to build on</li>
+        </ul>
       </div>
 
-      <!-- FSx ONTAP -->
-      <div class="card card--green">
-        <div class="card-label">Our Recommendation</div>
-        <div class="card-title" style="font-size:1rem;">FSx for NetApp ONTAP</div>
-        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.75rem;">Multiple protocols from one system: file sharing + object storage + built-in NetApp sync</div>
-        <table style="width:100%; font-size:0.74rem; border-collapse:collapse;">
-          <tr><td style="padding:0.3rem 0; color:var(--text-muted); width:38%; vertical-align:top;">Speed</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Under 1ms via network file sharing. Fast enough for H100 training; at this speed, the GPU is the bottleneck, not the storage.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Throughput</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; High throughput per filesystem (exact limit depends on deployment tier and configuration). Can scale with multiple volumes. Sufficient for P5 cluster training.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">S3 Integration</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; S3-compatible access on the exact same volume as file sharing. Both access types from one dataset, no copies.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">SageMaker</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; S3-compatible endpoint (S3 Access Point). SageMaker's preferred way to access data. No extra setup needed.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Sync from On-Prem</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Built-in NetApp sync (SnapMirror). Only sends changed data. RPO is configurable via SnapMirror sync frequency. No scripts, no rescans.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Experiment Copies</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Instant copies (FlexClone). Near-zero cost until researchers make changes. Data scientists self-serve.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Data Compression</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Automatic dedup and compression. Savings vary by data type. Inactive data automatically moves to cheap S3 at $0.023/GB.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Team Familiarity</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; Same tools as on-prem NetApp. Same team, same commands, same processes. Zero retraining required.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Protocol Support</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; File sharing (NFS + SMB) + object storage (S3) + direct database access (iSCSI), all from one volume.</td></tr>
-          <tr style="border-top:1px solid var(--border)"><td style="padding:0.3rem 0; color:var(--text-muted); vertical-align:top;">Cost</td>
-              <td style="padding:0.3rem 0; color:var(--green-400);">&#10003; $0.065/GB list (Single-AZ) → ~$0.040/GB effective after cold-data tiering. Lower total cost than Lustre.</td></tr>
-        </table>
+      <!-- Why not for GlobalCorp -->
+      <div class="card card--red" style="height:100%;">
+        <div class="card-label">Why Lustre is not suitable for GlobalCorp</div>
+        <ul style="margin:0.5rem 0 0 0; padding-left:1.1rem; font-size:0.76rem; color:var(--text-secondary); line-height:1.8;">
+          <li>No built-in sync with on-prem NetApp AFF; requires DataSync or custom scripts</li>
+          <li>No FlexClone; every experiment copy is a full data copy</li>
+          <li>No deduplication or compression; effective cost is higher</li>
+          <li>Lustre protocol only; no S3 Access Point for SageMaker, no SMB for Windows</li>
+          <li>Storage team would need to learn entirely new tooling from scratch</li>
+          <li>At this scale, FSx ONTAP is fast enough; the GPU is the bottleneck, not storage speed</li>
+        </ul>
       </div>
-    </div>
 
-    <div class="winner-banner">
-      <strong>When would FSx for Lustre beat FSx ONTAP?</strong>
-      New AWS-only workloads with no on-prem NetApp, where data throughput beyond 12.5 GB/second is genuinely required,
-      and the team has no NetApp experience to build on.
-      For GlobalCorp, with existing NetApp on-prem storage, built-in sync as the migration path, and a storage team that knows NetApp,
-      Lustre's speed advantage is outweighed by the cost of building custom data pipelines, losing instant experiment copies (FlexClone),
-      losing data compression savings, and retraining the entire storage team.
-      <strong>At this scale, the GPU is the bottleneck, not the storage speed. FSx ONTAP is fast enough.</strong>
     </div>
   </section>
 
