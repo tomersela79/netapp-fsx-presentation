@@ -1126,28 +1126,75 @@ html, body {
         <tr>
           <td class="criteria-col" style="font-weight:600;">Block Storage<br><span style="font-size:0.72rem; font-weight:400; color:var(--text-muted);">(dedicated disk per server)</span></td>
           <td style="font-size:0.75rem; color:var(--text-secondary);">Amazon EBS</td>
-          <td class="cell-win" style="font-size:0.76rem;">Fastest possible response time (&lt;0.5ms), highest read/write speed. Perfect for single-server workloads like databases or model checkpointing.</td>
-          <td class="cell-fail" style="font-size:0.76rem;">&#10007; Designed for one server at a time. Shared mode is limited to 16 instances in the same data center zone. For multiple EC2 instances, each would need its own copy of the data, multiplying the 2PB footprint by the number of instances.</td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Lowest latency of any AWS storage (&lt;0.5ms)</li>
+              <li>Highest IOPS, ideal for single-server workloads</li>
+              <li>Best fit for databases and model checkpointing</li>
+            </ul>
+          </td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Attaches to one server at a time by design</li>
+              <li>Shared mode capped at 16 instances, same AZ only</li>
+              <li>Each GPU instance would need its own full copy of the 2PB dataset</li>
+            </ul>
+          </td>
           <td class="cell-fail" style="font-size:0.8rem; font-weight:700; text-align:center;">Fails: can't share data across servers</td>
         </tr>
         <tr>
           <td class="criteria-col" style="font-weight:600;">Object Storage<br><span style="font-size:0.72rem; font-weight:400; color:var(--text-muted);">(files stored as objects, accessed via web API)</span></td>
           <td style="font-size:0.75rem; color:var(--text-secondary);">Amazon S3</td>
-          <td class="cell-win" style="font-size:0.76rem;">Unlimited scale, cheapest ($0.023/GB/month), natively understood by Amazon SageMaker, no servers to manage. The best economics for rarely-accessed data in the industry.</td>
-          <td class="cell-fail" style="font-size:0.76rem;">&#10007; 5–20 milliseconds to fetch each file. Training on 128 images = 128 separate fetches = up to 2.5 second pause per training step while the GPU sits idle. Amazon's Mountpoint for S3 has limited file operation support: no rename, no file locking, no random writes. AI frameworks like PyTorch and TensorFlow depend on these operations, making Mountpoint an unreliable foundation for training workloads.<br><br><span style="color:var(--green-400);">As the FabricPool cold tier, these limitations do not apply.</span></td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Unlimited scale, no servers to manage</li>
+              <li>Natively understood by SageMaker</li>
+              <li>Best fit for cold and archival data</li>
+            </ul>
+          </td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>5–20ms per file fetch; GPU sits idle during each training step</li>
+              <li>128-image mini-batch = 128 separate fetches = up to 2.5s stall</li>
+              <li>Mountpoint for S3: no rename, no file locking, no random writes; breaks PyTorch and TensorFlow</li>
+            </ul>
+            <div style="margin-top:0.4rem; font-size:0.72rem; color:var(--green-400);">Used as FabricPool cold tier; these limits do not apply in that role.</div>
+          </td>
           <td class="cell-warn" style="font-size:0.8rem; font-weight:700; text-align:center;">Used as cold tier, not primary storage</td>
         </tr>
         <tr>
           <td class="criteria-col" style="font-weight:600;">Shared File Storage<br><span style="font-size:0.72rem; font-weight:400; color:var(--text-muted);">(network file share, many servers, same files)</span></td>
           <td style="font-size:0.75rem; color:var(--text-secondary);">Amazon EFS</td>
-          <td class="cell-win" style="font-size:0.76rem;">True shared file access across unlimited EC2 servers simultaneously. Full standard file operations (POSIX). No capacity limits, grows automatically. 99.99% availability (Multi-AZ).</td>
-          <td class="cell-fail" style="font-size:0.76rem;">&#10007; File sharing only, with no object storage interface that SageMaker needs. No built-in sync with our on-prem NetApp storage. Basic tiering to EFS-IA only, with no tiering to S3 or cold object storage. No data compression. $0.30/GB/month = $614,000/month for our 2PB.</td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>True concurrent NFS access across unlimited EC2 instances</li>
+              <li>Full POSIX file operations</li>
+              <li>No capacity limits, scales automatically</li>
+            </ul>
+          </td>
+          <td class="cell-fail" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>No S3 interface; SageMaker cannot use it directly</li>
+              <li>No built-in sync with on-prem NetApp AFF</li>
+              <li>No deduplication or compression</li>
+              <li>Basic tiering to EFS-IA only; no S3 cold tier</li>
+            </ul>
+          </td>
           <td class="cell-fail" style="font-size:0.8rem; font-weight:700; text-align:center;">Fails: missing S3 access and hybrid sync</td>
         </tr>
         <tr>
           <td class="criteria-col" style="font-weight:600; color:var(--green-400);">Shared File Storage</td>
           <td style="font-size:0.75rem; color:var(--text-secondary);">FSx for NetApp ONTAP</td>
-          <td class="cell-win" style="font-size:0.76rem;">Everything EFS does <em>plus</em>: object storage access (S3-style) on the exact same data, with no copies. Built-in sync with on-prem NetApp (SnapMirror). Instant experiment copies that cost nearly nothing (FlexClone). Automatic tiering to cheaper storage via FabricPool. Deduplication savings across experiment copies. Same tools our team already knows. List price $0.065/GB/month (Single-AZ), cheaper than EFS ($0.30/GB) before tiering and dedup savings, which reduce effective cost further. Actual savings confirmed by pilot.</td>
+          <td class="cell-win" style="font-size:0.76rem;">
+            <ul style="margin:0; padding-left:1rem; line-height:1.7;">
+              <li>Everything EFS does, plus S3 Access Point on the same data with no copies</li>
+              <li>Built-in sync with on-prem NetApp AFF (SnapMirror)</li>
+              <li>Instant zero-copy experiment clones (FlexClone)</li>
+              <li>Automatic tiering to S3 cold storage (FabricPool)</li>
+              <li>Deduplication and compression reduce stored footprint</li>
+              <li>Same tools and team already in use on-prem</li>
+            </ul>
+          </td>
           <td style="font-size:0.76rem; color:var(--text-muted); padding:0.5rem 0.75rem; vertical-align:top; font-style:italic;">No significant drawback for this workload.</td>
           <td class="cell-win" style="font-size:0.8rem; font-weight:700; text-align:center;">&#10003; Meets all requirements</td>
         </tr>
