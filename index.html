@@ -1342,10 +1342,12 @@ html, body {
     <div class="winner-banner">
       <strong>FSx ONTAP S3 Access Points is the recommended option for leveraging traditional application file data for AI training.</strong>
       <ul style="margin-top:0.5rem; padding-left:1.25rem; display:flex; flex-direction:column; gap:0.25rem;">
-        <li>Data stays in its original format on FSx ONTAP. No conversion, no restructuring required.</li>
-        <li>SageMaker reads directly via the S3-compatible endpoint on the same volume. No extra copy, no extra storage cost.</li>
-        <li>SnapMirror keeps the cloud copy synchronized with the on-prem source as data changes. The training data stays current automatically.</li>
-        <li>With S3 Files, data must first be copied and potentially reformatted into S3, adding overhead and breaking the live connection to the on-prem source.</li>
+        <li>SnapMirror replicates only changed blocks automatically, no custom tooling needed.</li>
+        <li>File data is accessible via S3 Access Points on the same volume, with no conversion or duplication.</li>
+        <li>SageMaker reads natively via S3-compatible endpoint, with zero extra copies and zero extra cost.</li>
+        <li>Changed blocks sync automatically to keep the cloud copy current, no scripts or manual steps needed.</li>
+        <li>FlexClone creates instant zero-copy dataset clones; storage is only consumed when data actually changes.</li>
+        <li>Same ONTAP tools, same team, one console for both on-prem and cloud via NetApp BlueXP.</li>
       </ul>
     </div>
   </section>
