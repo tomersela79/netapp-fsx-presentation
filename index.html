@@ -1401,7 +1401,7 @@ html, body {
       <text x="578" y="26" text-anchor="middle" font-size="9" fill="#0067c5" letter-spacing="2" font-weight="600">AWS VPC</text>
 
       <rect x="743" y="15" width="203" height="220" rx="6" fill="rgba(30,46,69,0.25)" stroke="none"/>
-      <text x="844" y="29" text-anchor="middle" font-size="9" fill="#6B7E96" letter-spacing="2" font-weight="600">COMPUTE</text>
+      <text x="831" y="29" text-anchor="middle" font-size="9" fill="#6B7E96" letter-spacing="2" font-weight="600">COMPUTE</text>
 
       <!-- Production Apps (on-prem) -->
       <rect x="26" y="36" width="148" height="40" rx="4" fill="rgba(17,26,43,0.8)" stroke="#2A3A52" stroke-width="1"/>
@@ -1429,7 +1429,7 @@ html, body {
       <text x="183" y="144" text-anchor="middle" font-size="7" fill="#B7C4D6">Direct Connect</text>
 
       <!-- FSx ONTAP main box -->
-      <rect x="223" y="42" width="260" height="145" rx="8" fill="#162236" stroke="#0067c5" stroke-width="2"/>
+      <rect x="223" y="36" width="260" height="201" rx="8" fill="#162236" stroke="#0067c5" stroke-width="2"/>
       <text x="353" y="62" text-anchor="middle" font-size="11" fill="#35C2FF" font-weight="700">FSx for NetApp ONTAP</text>
       <text x="353" y="74" text-anchor="middle" font-size="8" fill="#6B7E96">Single-AZ Deployment</text>
 
@@ -1455,11 +1455,11 @@ html, body {
       <text x="353" y="158" text-anchor="middle" font-size="7.5" fill="#4A8C6A">One dataset, no duplicate copies</text>
 
       <!-- FabricPool arrow (bidirectional) -->
-      <line x1="353" y1="196" x2="353" y2="274" stroke="#ff6b00" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <line x1="353" y1="242" x2="353" y2="274" stroke="#ff6b00" stroke-width="1.5" stroke-dasharray="4,3"/>
       <polygon points="348,274 353,285 358,274" fill="#ff6b00"/>
-      <polygon points="348,196 353,187 358,196" fill="#ff6b00"/>
-      <text x="361" y="232" font-size="7.5" fill="#6B7E96">FabricPool</text>
-      <text x="361" y="243" font-size="7.5" fill="#6B7E96">auto-tier</text>
+      <polygon points="348,242 353,237 358,242" fill="#ff6b00"/>
+      <text x="361" y="256" font-size="7.5" fill="#6B7E96">FabricPool</text>
+      <text x="361" y="267" font-size="7.5" fill="#6B7E96">auto-tier</text>
 
       <!-- S3 cold tier -->
       <rect x="223" y="288" width="260" height="40" rx="6" fill="#0B1220" stroke="#6B7E96" stroke-width="1" stroke-dasharray="4,3"/>
@@ -1487,24 +1487,24 @@ html, body {
       <text x="831" y="201" text-anchor="middle" font-size="7.5" fill="#35C2FF">S3 Access Point endpoint</text>
 
       <!-- Dev/Test (middle zone: FSx ONTAP → FlexClone → Dev/Test → Compute) -->
-      <rect x="550" y="42" width="150" height="155" rx="8" fill="#0B1220" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
+      <rect x="550" y="36" width="150" height="201" rx="8" fill="#0B1220" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
       <text x="625" y="62" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="600">Dev / Test</text>
       <text x="625" y="80" text-anchor="middle" font-size="7.5" fill="#6B7E96">Zero-copy clone from FSx ONTAP</text>
       <text x="625" y="94" text-anchor="middle" font-size="7.5" fill="#6B7E96">Modify without touching source</text>
       <text x="625" y="108" text-anchor="middle" font-size="7.5" fill="#6B7E96">Pay only for changed blocks</text>
       <text x="625" y="122" text-anchor="middle" font-size="7.5" fill="#6B7E96">NFS · SMB · S3 AP</text>
 
-      <!-- FlexClone: FSx ONTAP → Dev/Test -->
-      <line x1="483" y1="115" x2="542" y2="115" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
-      <polygon points="542,110 552,115 542,120" fill="#22c55e"/>
+      <!-- FlexClone: FSx ONTAP → Dev/Test (tip stops 4px before Dev/Test left edge x=550) -->
+      <line x1="483" y1="115" x2="536" y2="115" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <polygon points="536,110 546,115 536,120" fill="#22c55e"/>
 
-      <!-- Dev/Test → EC2 GPU Cluster -->
-      <line x1="700" y1="90" x2="742" y2="87" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
-      <polygon points="742,82 752,87 742,92" fill="#22c55e"/>
+      <!-- Dev/Test → EC2 GPU Cluster (tip stops 5px before EC2 left edge x=750) -->
+      <line x1="700" y1="90" x2="733" y2="87" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <polygon points="733,82 743,87 733,92" fill="#22c55e"/>
 
-      <!-- Dev/Test → SageMaker -->
-      <line x1="700" y1="140" x2="742" y2="182" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
-      <polygon points="742,177 752,182 742,187" fill="#22c55e"/>
+      <!-- Dev/Test → SageMaker (45° diagonal; arrowhead rotated to match direction; tip stops 4px before x=750) -->
+      <line x1="700" y1="140" x2="739" y2="179" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <polygon points="746,186 735,183 742,175" fill="#22c55e"/>
 
       <!-- Legend — bottom strip -->
       <line x1="8" y1="340" x2="952" y2="340" stroke="#2A3A52" stroke-width="0.5"/>
